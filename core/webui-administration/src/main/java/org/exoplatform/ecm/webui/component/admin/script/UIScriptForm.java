@@ -16,6 +16,7 @@
  */
 package org.exoplatform.ecm.webui.component.admin.script;
 
+import org.exoplatform.commons.utils.HTMLSanitizer;
 import org.exoplatform.ecm.jcr.model.VersionNode;
 import org.exoplatform.ecm.webui.component.admin.script.UIScriptList.ScriptData;
 import org.exoplatform.ecm.webui.form.validator.ECMNameValidator;
@@ -189,7 +190,7 @@ public class UIScriptForm extends UIForm implements UIPopupComponent {
       StringBuilder name = new StringBuilder();
       name.append(uiForm.getUIStringInput(FIELD_SCRIPT_NAME).getValue().trim());
       String content = uiForm.getUIFormTextAreaInput(FIELD_SCRIPT_CONTENT).getValue().trim();
-      String label = uiForm.getUIStringInput(FIELD_SCRIPT_LABEL).getValue();
+      String label = HTMLSanitizer.sanitize(uiForm.getUIStringInput(FIELD_SCRIPT_LABEL).getValue());
      
       if (name.indexOf(SCRIPT_FILE_TYPE) < 0) {
         name.append(SCRIPT_FILE_TYPE);
