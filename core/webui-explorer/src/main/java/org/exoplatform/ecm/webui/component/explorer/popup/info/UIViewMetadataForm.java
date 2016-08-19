@@ -144,13 +144,14 @@ public class UIViewMetadataForm extends UIDialogForm {
                   node.setProperty(name, valuesReal);
               } else {
                 List<String> values = (List<String>) ((UIFormMultiValueInputSet)uiInput).getValue();
-                //--- Sanitize HTML input to avoid XSS attacks
-                for (String value : values) {
-                  values.set(values.indexOf(value), HTMLSanitizer.sanitize(value));
-                }
                 if(!node.hasProperty(name) || (node.hasProperty(name) && 
                     !uiForm.isEqualsValueStringArrays(node.getProperty(name).getValues(), 
                                                       values.toArray(new String[values.size()]))))
+
+                  //--- Sanitize HTML input to avoid XSS attacks
+                  for (int i = 0; i < values.size(); i++) {
+                    values.set(i,HTMLSanitizer.sanitize(values.get(i)));
+                  }
                   node.setProperty(name, values.toArray(new String[values.size()]));
               }
             }
