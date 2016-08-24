@@ -29,6 +29,7 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 
 import org.exoplatform.ecm.webui.form.UIFormInputSetWithAction;
+import org.exoplatform.ecm.webui.form.validator.ECMNameValidator;
 import org.exoplatform.ecm.webui.selector.UISelectable;
 import org.exoplatform.services.cms.templates.TemplateService;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -119,7 +120,7 @@ public class UITemplateForm extends UIFormTabPane implements UISelectable {
     uiSelectBox.setOnChange("OnChange");
     templateTab.addUIFormInput(uiSelectBox);
     templateTab.addUIFormInput(new UIFormStringInput(FIELD_LABEL, FIELD_LABEL, null).
-                               addValidator(MandatoryValidator.class)) ;
+                               addValidator(MandatoryValidator.class).addValidator(ECMNameValidator.class)) ;
 
     templateTab.addUIFormInput(new UICheckBoxInput(FIELD_ISTEMPLATE,
                                                    FIELD_ISTEMPLATE,
