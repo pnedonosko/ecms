@@ -21,7 +21,9 @@
   import org.exoplatform.ecm.webui.component.explorer.rightclick.manager.OpenDocumentManageComponent;
   import org.exoplatform.services.wcm.utils.WCMCoreUtils;
   import org.exoplatform.wcm.connector.collaboration.OpenInOfficeConnector;
+  import org.exoplatform.commons.utils.HTMLEntityEncoder;
 
+  def encoder = HTMLEntityEncoder.getInstance();
   def uiPortlet = uicomponent.getAncestorOfType(UIJCRExplorerPortlet.class);
   def uiExplorer = uicomponent.getAncestorOfType(UIJCRExplorer.class);
   def uiDriveArea = uiExplorer.getChild(UIWorkingArea.class).getChild(UIDrivesArea.class);
@@ -177,7 +179,7 @@
 				   }
 				   styleDrive = styleDrive.replace(" ","");
 			 %>
-	  	     <a id="driveAction" class="<%=getCSSClassOfDrivesButton()%> actionIcon pull-right" href="<%=uicomponent.event("ShowDrives")%>" rel="tooltip" data-placement="bottom" title="<%=_ctx.appRes("UIDrivesArea.DrivesArea.ShowDrives")%>"><i class="uiIconEcmsGeneralDrive uiIconEcms16x16Drive${styleDrive}"></i> <%=uicomponent.getDriveLabel();%> <i class="uiIconArrowDown uiIconLightGray"></i></a>
+	  	     <a id="driveAction" class="<%=getCSSClassOfDrivesButton()%> actionIcon pull-right" href="<%=uicomponent.event("ShowDrives")%>" rel="tooltip" data-placement="bottom" title="<%=_ctx.appRes("UIDrivesArea.DrivesArea.ShowDrives")%>"><i class="uiIconEcmsGeneralDrive uiIconEcms16x16Drive${styleDrive}"></i> <%=encoder.encode(uicomponent.getDriveLabel());%> <i class="uiIconArrowDown uiIconLightGray"></i></a>
   	   <%}%>
   		</div>
 		</div>
