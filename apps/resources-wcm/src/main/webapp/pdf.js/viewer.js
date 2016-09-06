@@ -6503,6 +6503,32 @@ var PDFViewerApplication = {
     var self = this;
     self.downloadComplete = false;
 
+    //highlight
+    // (Optionally) enable find controller.
+    var SEARCH_FOR="romain";
+    console.log("FindControler " + PDFViewerApplication.findController);
+
+    PDFViewerApplication.pdfViewer.container.addEventListener('pagesinit', function () {
+      // We can use pdfViewer now, e.g. let's change default scale.
+      console.log("dans le listener");
+      PDFViewerApplication.pdfViewer.currentScaleValue = 'page-width';
+
+      if (SEARCH_FOR) { // We can try search for things
+        console.log("dans le if, search_for="+SEARCH_FOR);
+        console.log(PDFViewerApplication.findController);
+        var event = document.createEvent('CustomEvent');
+        event.initCustomEvent('findhighlightallchange', true, true, {
+          query: SEARCH_FOR,
+          caseSensitive: false,
+          highlightAll: true
+          //findPrevious: findPrev
+        });
+        window.dispatchEvent(event);
+      }
+    });
+
+
+
     var loadingTask = PDFJS.getDocument(parameters);
     this.pdfLoadingTask = loadingTask;
 
