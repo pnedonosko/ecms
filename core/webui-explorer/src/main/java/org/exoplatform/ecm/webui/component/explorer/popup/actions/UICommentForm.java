@@ -167,7 +167,12 @@ public class UICommentForm extends UIForm implements UIPopupComponent {
       comment = HTMLSanitizer.sanitize(comment);
       CommentsService commentsService = uiForm.getApplicationComponent(CommentsService.class);
       if (comment == null || comment.trim().length() == 0) {
-        event.getSource().getAncestorOfType(UIPopupContainer.class).cancelPopupAction();
+        Locale locale = WebuiRequestContext.getCurrentInstance().getLocale();
+        ResourceBundleService resourceBundleService = WCMCoreUtils.getService(ResourceBundleService.class);
+        ResourceBundle resourceBundle = resourceBundleService.getResourceBundle("locale.ecm.dialogs", locale);
+        String placeholder = resourceBundle.getString("UICommentForm.label.placeholder");
+        event.getRequestContext().getJavascriptManager().require("SHARED/uiCommentForm", "commentForm")
+            .addScripts("eXo.ecm.CommentForm.init('" + placeholder + "');");
         throw new MessageException(new ApplicationMessage("UICommentForm.msg.content-null", null, ApplicationMessage.WARNING));
       }
       if (uiForm.isEdit()) {
