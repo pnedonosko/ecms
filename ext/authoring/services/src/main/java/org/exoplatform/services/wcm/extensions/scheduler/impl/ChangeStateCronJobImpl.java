@@ -161,10 +161,9 @@ public class ChangeStateCronJobImpl implements Job {
     
     Query query = queryManager.createQuery(statement, Query.SQL);
     QueryResult queryResult = query.execute();
-    
     for (NodeIterator iter = queryResult.getNodes(); iter.hasNext();) {
       Node node_ = iter.nextNode();
-      
+   try{
       String path = node_.getPath();
       if (!path.startsWith("/jcr:system")) {
         if (NORMAL_NODE == nodeType) {
@@ -199,7 +198,16 @@ public class ChangeStateCronJobImpl implements Job {
         if(END_TIME_PROPERTY.equals(property) && node_.hasProperty(END_TIME_PROPERTY)){
           node_.getProperty(END_TIME_PROPERTY).remove();
           node_.save();
+          }
         }
+      }
+      catch (RepositoryException ex) {
+        if (LOG.isErrorEnabled()) {
+          LOG.error("node_.getPath()" + "not found" + ex.getMessage(), ex);
+        }
+      }
+      finally {
+        continue;
       }
     }
     
