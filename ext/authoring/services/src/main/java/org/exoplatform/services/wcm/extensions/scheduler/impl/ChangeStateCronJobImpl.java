@@ -205,8 +205,6 @@ public class ChangeStateCronJobImpl implements Job {
         if (LOG.isErrorEnabled()) {
           LOG.error("node_.getPath()" + "not found" + ex.getMessage(), ex);
         }
-      }
-      finally {
         continue;
       }
     }
