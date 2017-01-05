@@ -16,29 +16,7 @@
  */
 package org.exoplatform.wcm.connector.fckeditor;
 
-import java.net.URLDecoder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import javax.annotation.security.RolesAllowed;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.ecm.connector.fckeditor.FCKUtils;
 import org.exoplatform.ecm.utils.text.Text;
@@ -72,7 +50,28 @@ import org.exoplatform.wcm.connector.handler.FCKFileHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-import org.apache.commons.lang.StringUtils;
+
+import javax.annotation.security.RolesAllowed;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import java.net.URLDecoder;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Returns a list of drives/folders/documents in a specified location for a given user. Also, it processes the file uploading action.
@@ -112,6 +111,10 @@ public class DriverConnector extends BaseConnector implements ResourceContainer 
   public static final String TYPE_EDITOR = "editor";
 
   public static final String TYPE_CONTENT = "multi";
+
+  public static final String NODE_LOCKED = "node locked";
+
+  public static final String KEEP = "keep";
 
   /** The log. */
   private static final Log LOG = ExoLogger.getLogger(DriverConnector.class.getName());
@@ -429,6 +432,11 @@ public class DriverConnector extends BaseConnector implements ResourceContainer 
                                                      Text.escapeIllegalJcrChars(driverName),
                                                      Text.escapeIllegalJcrChars(currentFolder));
         fileName = Text.escapeIllegalJcrChars(fileName);
+        if (existenceAction != null && !existenceAction.equals(KEEP) && currentFolderNode.hasNode(fileName)) {
+          if (currentFolderNode.getNode(fileName).isLocked()) {
+            return Response.serverError().entity(NODE_LOCKED).build();
+          }
+        }
         return createProcessUploadResponse(workspaceName,
                                            currentFolderNode,
                                            currentPortal,

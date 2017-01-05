@@ -16,30 +16,6 @@
  */
 package org.exoplatform.wcm.connector;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Locale;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.dom.DOMSource;
-
 import com.ibm.icu.text.Transliterator;
 import org.apache.commons.lang.StringUtils;
 import org.exoplatform.common.http.HTTPStatus;
@@ -64,6 +40,23 @@ import org.exoplatform.upload.UploadService.UploadLimit;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
+import javax.jcr.lock.LockException;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.CacheControl;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.dom.DOMSource;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -528,6 +521,9 @@ public class FileUploadHandler {
           .cacheControl(cacheControl)
           .header(LAST_MODIFIED_PROPERTY, dateFormat.format(new Date()))
           .build();
+    } catch (LockException e) {
+      LOG.error(e.getMessage(), e);
+      return Response.serverError().entity(e.getMessage()).build();
     } catch (Exception exc) {
       LOG.error(exc.getMessage(), exc);
       return Response.serverError().entity(exc.getMessage()).build();
@@ -614,7 +610,6 @@ public class FileUploadHandler {
   
   /**
    * returns a DOMSource object containing given message
-   * @param message the message
    * @return DOMSource object
    * @throws Exception
    */
