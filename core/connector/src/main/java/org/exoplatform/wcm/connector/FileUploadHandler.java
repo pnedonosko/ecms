@@ -522,7 +522,7 @@ public class FileUploadHandler {
           .header(LAST_MODIFIED_PROPERTY, dateFormat.format(new Date()))
           .build();
     } catch (LockException e) {
-      LOG.error(e.getMessage(), e);
+      LOG.error("The file: " + fileName + " is locked by another user", e);
       return Response.serverError().entity(e.getMessage()).build();
     } catch (Exception exc) {
       LOG.error(exc.getMessage(), exc);

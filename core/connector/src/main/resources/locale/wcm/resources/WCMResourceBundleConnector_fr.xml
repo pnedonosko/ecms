@@ -28,4 +28,9 @@
       <WrongMimeType>Le type MIME du fichier uploadé est inconnu. Aucune nouvelle version de {0} ne sera créée.</WrongMimeType>
     </msg>
   </DocumentAutoVersion>
+  <UIMultiUpload>
+    <label>
+      <NodeLocked>Ce noeud est verrouillé par un autre utilisateur</NodeLocked>
+    </label>
+  </UIMultiUpload>
 </bundle>

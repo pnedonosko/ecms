@@ -52,8 +52,8 @@
 	MultiUpload.prototype.MAX_SIZE_ALERT = "MaxSizeAlert";
 	MultiUpload.prototype.SUPPORT_FILE_API = window.FileReader;
 	MultiUpload.prototype.MAX_CONNECTION = 10;
-	MultiUpload.prototype.NODE_LOCKED = "node locked";
-	MultiUpload.prototype.nodeLockedMsg = "This node is locked by another user";
+	MultiUpload.prototype.NODE_LOCKED_ERROR_CODE = "node_locked";
+	MultiUpload.prototype.nodeLockedMsg = "NodeLocked";
 	MultiUpload.prototype.ABORT_POPUP_ID = "uiMultiUploadAbortAllPopup";
 	MultiUpload.prototype.ABORT_POPUP_OK_ID = "uiMultiUploadAbortAllPopupOK";
 	MultiUpload.prototype.ABORT_POPUP_CANCEL_ID = "uiMultiUploadAbortAllPopupCancel";
@@ -826,7 +826,7 @@
 		  "&action=progress&uploadId=" + id;
 		  // Encode request to control upload progress
 		  uri = encodeURI(uri);
-		  gj.ajax({url: uri, 
+		  gj.ajax({url: uri,
 			   success: function(ret) {
 		  		if (!ret) {
 					setTimeout(function(){eXo.ecm.MultiUpload.handleReaderProgress(id)}, 1000);
@@ -886,9 +886,10 @@
 				}	    
 			},
 		      error: function(ret, status, xhr) {
-				 if (ret.responseText == eXo.ecm.MultiUpload.NODE_LOCKED) {
-				 	 eXo.ecm.WCMUtils.showNotice(eXo.ecm.MultiUpload.nodeLockedMsg, true, "error");
-				 	 var e = eXo.ecm.MultiUpload.handleReaderAbort(id, eXo.ecm.MultiUpload.ERROR);
+				  if (ret.getResponseHeader("developerMessage") == eXo.ecm.MultiUpload.NODE_LOCKED_ERROR_CODE) {
+					  eXo.ecm.WCMUtils.showNotice(eXo.ecm.MultiUpload.getMsg(eXo.ecm.MultiUpload.nodeLockedMsg), true, "error");
+					  eXo.ecm.MultiUpload.cancelRequestMap[id] = true;
+					  var e = eXo.ecm.MultiUpload.handleReaderAbort(id, eXo.ecm.MultiUpload.ERROR);
 				 	 e(window.event);
 				 } else if (eXo.ecm.MultiUpload.connectionFailed[id]++ > eXo.ecm.MultiUpload.MAX_CONNECTION) {
 					 var e = eXo.ecm.MultiUpload.handleReaderAbort(id, eXo.ecm.MultiUpload.ERROR);

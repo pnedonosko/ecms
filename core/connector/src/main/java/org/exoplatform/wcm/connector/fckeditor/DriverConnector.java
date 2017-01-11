@@ -112,9 +112,9 @@ public class DriverConnector extends BaseConnector implements ResourceContainer 
 
   public static final String TYPE_CONTENT = "multi";
 
-  public static final String NODE_LOCKED = "node locked";
+  public static final String NODE_LOCKED = "node_locked";
 
-  public static final String KEEP = "keep";
+  public static final String CREATE_VERSION = "createVersion";
 
   /** The log. */
   private static final Log LOG = ExoLogger.getLogger(DriverConnector.class.getName());
@@ -432,10 +432,10 @@ public class DriverConnector extends BaseConnector implements ResourceContainer 
                                                      Text.escapeIllegalJcrChars(driverName),
                                                      Text.escapeIllegalJcrChars(currentFolder));
         fileName = Text.escapeIllegalJcrChars(fileName);
-        if (existenceAction != null && !existenceAction.equals(KEEP) && currentFolderNode.hasNode(fileName)) {
-          if (currentFolderNode.getNode(fileName).isLocked()) {
-            return Response.serverError().entity(NODE_LOCKED).build();
-          }
+        if (existenceAction != null && existenceAction.equals(CREATE_VERSION) && currentFolderNode.hasNode(fileName)
+            && currentFolderNode.getNode(fileName).isLocked()) {
+          return Response.status(Response.Status.FORBIDDEN.getStatusCode())
+              .header("message", "This node is locked by another user").header("developerMessage", NODE_LOCKED).build();
         }
         return createProcessUploadResponse(workspaceName,
                                            currentFolderNode,

@@ -28,4 +28,9 @@
       <WrongMimeType>The mimetype of the file uploaded is unknown. No new version of {0} will be created.</WrongMimeType>
     </msg>
   </DocumentAutoVersion>
+  <UIMultiUpload>
+    <label>
+      <NodeLocked>This node is locked by another user</NodeLocked>
+    </label>
+  </UIMultiUpload>
 </bundle>
