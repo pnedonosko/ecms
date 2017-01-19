@@ -47,6 +47,7 @@ import org.exoplatform.services.wcm.webcontent.WebContentSchemaHandler;
 import org.exoplatform.wcm.connector.BaseConnector;
 import org.exoplatform.wcm.connector.FileUploadHandler;
 import org.exoplatform.wcm.connector.handler.FCKFileHandler;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -434,8 +435,10 @@ public class DriverConnector extends BaseConnector implements ResourceContainer 
         fileName = Text.escapeIllegalJcrChars(fileName);
         if (existenceAction != null && existenceAction.equals(CREATE_VERSION) && currentFolderNode.hasNode(fileName)
             && currentFolderNode.getNode(fileName).isLocked()) {
-          return Response.status(Response.Status.FORBIDDEN.getStatusCode())
-              .header("message", "This node is locked by another user").header("developerMessage", NODE_LOCKED).build();
+          JSONObject obj = new JSONObject();
+          obj.put("message", "This node is locked by another user");
+          obj.put("developerMessage", NODE_LOCKED);
+          return Response.status(Response.Status.FORBIDDEN.getStatusCode()).entity(obj.toString()).build();
         }
         return createProcessUploadResponse(workspaceName,
                                            currentFolderNode,

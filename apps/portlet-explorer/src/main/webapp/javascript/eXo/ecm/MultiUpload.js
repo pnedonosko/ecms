@@ -53,7 +53,7 @@
 	MultiUpload.prototype.SUPPORT_FILE_API = window.FileReader;
 	MultiUpload.prototype.MAX_CONNECTION = 10;
 	MultiUpload.prototype.NODE_LOCKED_ERROR_CODE = "node_locked";
-	MultiUpload.prototype.nodeLockedMsg = "NodeLocked";
+	MultiUpload.prototype.NODE_LOCKED_MSG_KEY = "NodeLocked";
 	MultiUpload.prototype.ABORT_POPUP_ID = "uiMultiUploadAbortAllPopup";
 	MultiUpload.prototype.ABORT_POPUP_OK_ID = "uiMultiUploadAbortAllPopupOK";
 	MultiUpload.prototype.ABORT_POPUP_CANCEL_ID = "uiMultiUploadAbortAllPopupCancel";
@@ -886,8 +886,8 @@
 				}	    
 			},
 		      error: function(ret, status, xhr) {
-				  if (ret.getResponseHeader("developerMessage") == eXo.ecm.MultiUpload.NODE_LOCKED_ERROR_CODE) {
-					  eXo.ecm.WCMUtils.showNotice(eXo.ecm.MultiUpload.getMsg(eXo.ecm.MultiUpload.nodeLockedMsg), true, "error");
+				  if (JSON.parse(ret.responseText).developerMessage == eXo.ecm.MultiUpload.NODE_LOCKED_ERROR_CODE) {
+					  eXo.ecm.WCMUtils.showNotice(eXo.ecm.MultiUpload.getMsg(eXo.ecm.MultiUpload.NODE_LOCKED_MSG_KEY), true, "error");
 					  eXo.ecm.MultiUpload.cancelRequestMap[id] = true;
 					  var e = eXo.ecm.MultiUpload.handleReaderAbort(id, eXo.ecm.MultiUpload.ERROR);
 				 	 e(window.event);
