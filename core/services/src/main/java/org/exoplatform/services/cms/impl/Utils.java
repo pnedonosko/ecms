@@ -650,6 +650,9 @@ public class Utils {
     // delete special character
     for(int i = 0; i < cleanedStr.length(); i++) {
       char c = cleanedStr.charAt(i);
+      if(c == '_'){
+          continue;
+      }
       if(c == ' ') {
         if (i > 0 && cleanedStr.charAt(i - 1) == '-') {
           cleanedStr.deleteCharAt(i--);

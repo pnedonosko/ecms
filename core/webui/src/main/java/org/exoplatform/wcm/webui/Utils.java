@@ -176,62 +176,6 @@ public class Utils {
   }
 
   /**
-   * Can edit current portal.
-   *
-   * @param remoteUser the remote user
-   * @return true, if successful
-   * @throws Exception the exception
-   */
-  public static boolean canEditCurrentPortal(String remoteUser) throws Exception {
-    if (remoteUser == null)
-      return false;
-    IdentityRegistry identityRegistry = Util.getUIPortalApplication()
-                                            .getApplicationComponent(IdentityRegistry.class);
-    Identity identity = identityRegistry.getIdentity(remoteUser);
-    if (identity == null)
-      return false;
-    UIPortal uiPortal = Util.getUIPortal();
-    // this code only work for single edit permission
-    String editPermission = uiPortal.getEditPermission();
-    MembershipEntry membershipEntry = MembershipEntry.parse(editPermission);
-    return identity.isMemberOf(membershipEntry);
-  }
-
-  /**
-   * Clean string.
-   *
-   * @param str the str
-   * @return the string
-   */
-  public static String cleanString(String str) {
-    Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
-    str = accentsconverter.transliterate(str);
-    // the character ? seems to not be changed to d by the transliterate
-    // function
-    StringBuffer cleanedStr = new StringBuffer(str.trim());
-    // delete special character
-    for (int i = 0; i < cleanedStr.length(); i++) {
-      char c = cleanedStr.charAt(i);
-      if (c == ' ') {
-        if (i > 0 && cleanedStr.charAt(i - 1) == '-') {
-          cleanedStr.deleteCharAt(i--);
-        } else {
-          c = '-';
-          cleanedStr.setCharAt(i, c);
-        }
-        continue;
-      }
-      if (i > 0 && !(Character.isLetterOrDigit(c) || c == '-')) {
-        cleanedStr.deleteCharAt(i--);
-        continue;
-      }
-      if (i > 0 && c == '-' && cleanedStr.charAt(i - 1) == '-')
-        cleanedStr.deleteCharAt(i--);
-    }
-    return cleanedStr.toString().toLowerCase();
-  }
-
-  /**
    * Refresh whole portal by AJAX.
    *
    * @param context the portlet request context

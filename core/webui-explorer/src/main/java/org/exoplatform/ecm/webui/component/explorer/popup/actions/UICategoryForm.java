@@ -81,7 +81,7 @@ public class UICategoryForm extends UIForm implements UIPopupComponent {
       UIJCRExplorer uiExplorer = uiFolderForm.getAncestorOfType(UIJCRExplorer.class);
       UIApplication uiApp = uiFolderForm.getAncestorOfType(UIApplication.class);
       String title = uiFolderForm.getUIStringInput(FIELD_NAME).getValue();
-      String name = Utils.cleanString(title);
+      String name = org.exoplatform.services.cms.impl.Utils.cleanString(title);
       Node node = uiExplorer.getCurrentNode();
       if (uiExplorer.nodeIsLocked(node)) {
         uiApp.addMessage(new ApplicationMessage("UIPopupMenu.msg.node-locked", null));

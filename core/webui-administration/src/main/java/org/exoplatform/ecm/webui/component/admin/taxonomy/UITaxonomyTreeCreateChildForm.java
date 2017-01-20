@@ -86,7 +86,7 @@ public class UITaxonomyTreeCreateChildForm extends UIForm {
       UIApplication uiApp = uiForm.getAncestorOfType(UIApplication.class);
       String title = uiForm.getUIStringInput(FIELD_NAME).getValue();
       
-      String name = Utils.cleanString(title);
+      String name = org.exoplatform.services.cms.impl.Utils.cleanString(title);
       
       if (name == null || name.length() == 0) {
         uiApp.addMessage(new ApplicationMessage("UITaxonomyTreeCreateChildForm.msg.name-null",
