@@ -84,18 +84,14 @@ public class EmailNotifyListener implements EventListener {
   private static final String USER_ID             = "${userId}";
 
   private static final Log    LOG                 = ExoLogger.getLogger(EmailNotifyListener.class.getName());
-  
-  /** Number of modified properties when click on Save or Save & Close without making any change for the first time*/
-  private static final long FIRST_MODIFIED_PROPERTIES = 5;
 
-  /** Number of modified properties when click on Save or Save & Close without making any change*/
-  private static final long MODIFIED_PROPERTIES = 4;
-
-  /**LastModified property changed when open a file for the first time */
-  private static final String JCR_LAST_MODIFIED = "jcr:content/jcr:lastModified";
-
-  /**property chenged when click on Edit */
-  private static final String PROPERTY_CHANGED_WHEN_EDIT = "jcr:mixinTypes";
+  /** list of modified properties when editing a document*/
+  private static final String EXO_LANGUAGE_PROPERTY   = "exo:language";
+  private static final String JCR_DATA_PROPERTY       = "jcr:content/jcr:data";
+  private static final String DC_SOURCE_PROPERTY      = "jcr:content/dc:source";
+  private static final String DC_DESCRIPTION_PROPERTY = "jcr:content/dc:description";
+  private static final String DC_TITLE_PROPERTY   = "jcr:content/dc:title";
+  private static final String DC_CREATOR_PROPERTY   = "jcr:content/dc:creator";
 
 
   public EmailNotifyListener(Node oNode) {
@@ -118,23 +114,19 @@ public class EmailNotifyListener implements EventListener {
    */
   private void sendAsynchronousMessage(final EventIterator arg0) {
     List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
-    boolean firstAccess = false;
     boolean editFile = false;
     List<EventImpl> entities = ((EntityCollection) arg0).getList();
     MailService mailService = WCMCoreUtils.getService(MailService.class);
     WatchDocumentServiceImpl watchService = (WatchDocumentServiceImpl)WCMCoreUtils.getService(WatchDocumentService.class);
     MessageConfig messageConfig = watchService.getMessageConfig();
-    //check the list of modified properties when an action is done
+    //check the modified properties when an action is done
     for(EventImpl entity : entities) {
-      if (entity.getPath().contains(JCR_LAST_MODIFIED)) {
-        firstAccess = true;
-      }
-      if(firstAccess) break;
-      if(entity.getPath().contains(PROPERTY_CHANGED_WHEN_EDIT)){
+      if ((entity.getPath().contains(EXO_LANGUAGE_PROPERTY)) || (entity.getPath().contains(JCR_DATA_PROPERTY)) || (entity.getPath().contains(DC_SOURCE_PROPERTY)) ||
+              (entity.getPath().contains(DC_DESCRIPTION_PROPERTY)) || (entity.getPath().contains(DC_TITLE_PROPERTY)) || (entity.getPath().contains(DC_CREATOR_PROPERTY))) {
         editFile = true;
       }
     }
-    if (!editFile && ((firstAccess && arg0.getSize() > FIRST_MODIFIED_PROPERTIES) || (!firstAccess && (arg0.getSize() > MODIFIED_PROPERTIES || arg0.getSize() < MODIFIED_PROPERTIES)))) {
+    if (editFile) {
       for (String receiver : emailList) {
         try {
           Message message = createMessage(receiver, messageConfig);
