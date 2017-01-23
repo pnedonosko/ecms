@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -32,6 +33,9 @@ import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
 import javax.portlet.PortletRequest;
 
+import org.exoplatform.commons.api.notification.service.NotificationCompletionService;
+import org.exoplatform.commons.notification.impl.NotificationSessionManager;
+import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.portal.application.PortalRequestContext;
 import org.exoplatform.portal.mop.SiteType;
 import org.exoplatform.portal.mop.user.UserNavigation;
@@ -42,6 +46,8 @@ import org.exoplatform.services.cms.drives.DriveData;
 import org.exoplatform.services.cms.drives.ManageDriveService;
 import org.exoplatform.services.cms.watch.WatchDocumentService;
 import org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator;
+import org.exoplatform.services.jcr.impl.core.observation.EventImpl;
+import org.exoplatform.services.jcr.impl.util.EntityCollection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.mail.MailService;
@@ -78,6 +84,19 @@ public class EmailNotifyListener implements EventListener {
   private static final String USER_ID             = "${userId}";
 
   private static final Log    LOG                 = ExoLogger.getLogger(EmailNotifyListener.class.getName());
+  
+  /** Number of modified properties when click on Save or Save & Close without making any change for the first time*/
+  private static final long FIRST_MODIFIED_PROPERTIES = 5;
+
+  /** Number of modified properties when click on Save or Save & Close without making any change*/
+  private static final long MODIFIED_PROPERTIES = 4;
+
+  /**LastModified property changed when open a file for the first time */
+  private static final String JCR_LAST_MODIFIED = "jcr:content/jcr:lastModified";
+
+  /**property chenged when click on Edit */
+  private static final String PROPERTY_CHANGED_WHEN_EDIT = "jcr:mixinTypes";
+
 
   public EmailNotifyListener(Node oNode) {
     observedNode_ = NodeLocation.getNodeLocationByNode(oNode);
@@ -88,17 +107,56 @@ public class EmailNotifyListener implements EventListener {
    * message is sent to list of email
    */
   public void onEvent(EventIterator arg0) {
+    sendAsynchronousMessage(arg0);
+  }
+
+ /** This used is used to send Asynchronous message
+  *
+   * @param arg0
+ * @return Future
+ */
+  private void sendAsynchronousMessage(final EventIterator arg0) {
+    List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
+    boolean firstAccess = false;
+    boolean editFile = false;
+    List<EventImpl> entities = ((EntityCollection) arg0).getList();
     MailService mailService = WCMCoreUtils.getService(MailService.class);
     WatchDocumentServiceImpl watchService = (WatchDocumentServiceImpl)WCMCoreUtils.getService(WatchDocumentService.class);
     MessageConfig messageConfig = watchService.getMessageConfig();
-    List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
-    for (String receiver : emailList) {
-      try {
-        Message message = createMessage(receiver, messageConfig);
-        mailService.sendMessage(message);
-      } catch (Exception e) {
-        if (LOG.isErrorEnabled()) {
-          LOG.error("Unexpected error", e);
+    //check the list of properties changed when an action is done
+    for(EventImpl entity : entities) {
+      if (entity.getPath().contains(JCR_LAST_MODIFIED)) {
+        firstAccess = true;
+      }
+      if(firstAccess) break;
+      if(entity.getPath().contains(PROPERTY_CHANGED_WHEN_EDIT)){
+        editFile = true;
+      }
+    }
+    if (!editFile && ((firstAccess && arg0.getSize() > FIRST_MODIFIED_PROPERTIES) || (!firstAccess && (arg0.getSize() > MODIFIED_PROPERTIES || arg0.getSize() < MODIFIED_PROPERTIES)))) {
+      for (String receiver : emailList) {
+        try {
+          Message message = createMessage(receiver, messageConfig);
+          Callable<Boolean> task = new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+              boolean created = NotificationSessionManager.createSystemProvider();
+              try {
+                mailService.sendMessage(message);
+              } catch (Exception e) {
+                LOG.error("Failed to send a message", e);
+                return false;
+              } finally {
+                NotificationSessionManager.closeSessionProvider(created);
+              }
+              return true;
+            }
+          };
+          CommonsUtils.getService(NotificationCompletionService.class).addTask(task);
+        } catch (Exception e) {
+          if (LOG.isErrorEnabled()) {
+            LOG.error("Unexpected error", e);
+          }
         }
       }
     }
