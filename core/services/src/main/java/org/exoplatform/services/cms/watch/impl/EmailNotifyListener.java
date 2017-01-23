@@ -110,11 +110,12 @@ public class EmailNotifyListener implements EventListener {
     sendAsynchronousMessage(arg0);
   }
 
- /** This used is used to send Asynchronous message
-  *
+  /**
+   * This method is used to send Asynchronous message
+   *
    * @param arg0
- * @return Future
- */
+   * @return Future
+   */
   private void sendAsynchronousMessage(final EventIterator arg0) {
     List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
     boolean firstAccess = false;
@@ -123,7 +124,7 @@ public class EmailNotifyListener implements EventListener {
     MailService mailService = WCMCoreUtils.getService(MailService.class);
     WatchDocumentServiceImpl watchService = (WatchDocumentServiceImpl)WCMCoreUtils.getService(WatchDocumentService.class);
     MessageConfig messageConfig = watchService.getMessageConfig();
-    //check the list of properties changed when an action is done
+    //check the list of modified properties when an action is done
     for(EventImpl entity : entities) {
       if (entity.getPath().contains(JCR_LAST_MODIFIED)) {
         firstAccess = true;
