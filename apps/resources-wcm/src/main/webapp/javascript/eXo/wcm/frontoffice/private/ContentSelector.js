@@ -476,6 +476,9 @@
 				currentNode = currentNode.getElementsByTagName('div')[0].getElementsByTagName('a')[0];
 			}
 		}
+		var depth = gj("#BreadcumbsContainer li").size()
+		var leftWorkspaceOffsetLeft = gj(".leftWorkspace").offset().left;
+		gj("#LeftWorkspace").offset({left:leftWorkspaceOffsetLeft - (depth-2)*15});
 	};
 	
 	EcmContentSelector.prototype.actionBreadcrumbs = function(nodeId) {
