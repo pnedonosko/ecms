@@ -23,6 +23,7 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.regex.Pattern;
 
 import javax.jcr.Item;
 import javax.jcr.NoSuchWorkspaceException;
@@ -59,6 +60,7 @@ import org.exoplatform.services.cms.impl.Utils;
 import org.exoplatform.services.cms.jcrext.activity.ActivityCommonService;
 import org.exoplatform.services.cms.link.LinkUtils;
 import org.exoplatform.services.cms.link.NodeFinder;
+import org.exoplatform.services.context.DocumentContext;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.webdav.util.InitParamsDefaults;
@@ -507,23 +509,33 @@ public class WebDavServiceImpl extends org.exoplatform.services.jcr.webdav.WebDa
       return Response.serverError().build();
     }
 
-    Response res = super.put(repoName,
-                             repoPath,
-                             lockTokenHeader,
-                             ifHeader,
-                             null,
-                             nodeTypeHeader,
-                             mixinTypes,
-                             mediaType,
-                             userAgent,
-                             inputStream,
-                             uriInfo);
+    Response res = null;
+    // Avoid broadcasting JCR events that generates activities
+    DocumentContext.getCurrent().getAttributes().put(DocumentContext.IS_SKIP_RAISE_ACT, true);
     try {
-
+	    res = super.put( repoName,
+	                     repoPath,
+	                     lockTokenHeader,
+	                     ifHeader,
+	                     null,
+	                     nodeTypeHeader,
+	                     mixinTypes,
+	                     mediaType,
+	                     userAgent,
+	                     inputStream,
+	                     uriInfo);
+    } finally {
+        DocumentContext.getCurrent().getAttributes().put(DocumentContext.IS_SKIP_RAISE_ACT, false);
+    }
+    try {
       boolean pushAs = markTempFilesToHidden(repoPath);
+      // Mac adds the file under temporary folder. Parent folder = /fileName.hash/
+      String fileName = repoPath.substring(repoPath.lastIndexOf("/"), repoPath.length());
+      boolean isMacTempFolder = repoPath.indexOf(fileName + ".") > 0 && repoPath.indexOf(fileName + ".") < repoPath.lastIndexOf("/");
+      isCreating = isCreating && !isMacTempFolder;
       Node currentNode = (Node) session.getItem(path(repoPath));
       if (isCreating) {
-        if (userAgent!= null && userAgent.contains("Microsoft")) {
+        if (userAgent!= null && (userAgent.contains("Microsoft"))) {
           activityService.setCreating(currentNode, true);
         }
       }else {
@@ -693,6 +705,7 @@ public class WebDavServiceImpl extends org.exoplatform.services.jcr.webdav.WebDa
       }
       return Response.serverError().build();
     }
+
     Response response = super.move(repoName,
                                    repoPath,
                                    destinationHeader,
@@ -702,7 +715,6 @@ public class WebDavServiceImpl extends org.exoplatform.services.jcr.webdav.WebDa
                                    overwriteHeader,
                                    uriInfo,
                                    body);
-
     if (response.getStatus() == HTTPStatus.CREATED) {
       updateProperties(destinationHeader, repoName);
     }
@@ -893,11 +905,16 @@ public class WebDavServiceImpl extends org.exoplatform.services.jcr.webdav.WebDa
     String tempNodeFolder      = ".TemporaryItems";
     String tempNodeFileChild = "._folders.501";
     String tempNodeFile        = "._.TemporaryItems";
-    String txtTempRegex        = "/._";
+    String[] tempRegex        = new String[]{"/\\..*", "/.*\\.tmp"};
     try {
-      String txtTemp = repoPath.substring(repoPath.lastIndexOf("/"), repoPath.length());
-      boolean isTxtTemp = txtTemp.startsWith(txtTempRegex)?true:false;
-      if(repoPath.contains(tempNodeFile) || isTxtTemp){
+      String fileName = repoPath.substring(repoPath.lastIndexOf("/"), repoPath.length());
+      boolean isTemp = false;
+      int i = 0;
+      while (i < tempRegex.length && !isTemp) {
+        String regex = tempRegex[i++];
+        isTemp = Pattern.matches(regex, fileName);
+      }
+      if(repoPath.contains(tempNodeFile) || isTemp){
         Node _tempNodeFile = (Node)nodeFinder.getItem(workspaceName(repoPath), path(repoPath), true);
         _tempNodeFile.remove();
         _tempNodeFile.getSession().save();
