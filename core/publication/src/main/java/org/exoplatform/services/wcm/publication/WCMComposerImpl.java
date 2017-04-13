@@ -292,18 +292,36 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       }
     }
 
-    String primaryType = "";
+    int viewbaleTaxonomiesContentsSize = getViewabaleTaxonomiesContentsSize(path, workspace, filters, sessionProvider);
+    if (viewbaleTaxonomiesContentsSize > 0){
+      totalSize = viewbaleTaxonomiesContentsSize;
+    }
+
+    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
+
+    return result;
+  }
+
+  /**
+   * Check total contents' size when nodes are taxonomies
+   * @param path
+   * @param workspace
+   * @param filters
+   * @param sessionProvider
+   * @return
+   * @throws Exception
+   */
+  private int getViewabaleTaxonomiesContentsSize(String path, String workspace,HashMap<String, String> filters,
+                                      SessionProvider sessionProvider) throws Exception {
+
     ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
     Session session = sessionProvider.getSession(workspace, manageableRepository);
     Node currentFolder = null;
     if (session.getRootNode().hasNode(path.substring(1))) {
       currentFolder = session.getRootNode().getNode(path.substring(1));
     }
-    if (currentFolder != null && currentFolder.isNodeType("exo:taxonomy")) {
-      primaryType = "exo:taxonomyLink";
-    }
 
-    if ( primaryType.compareTo("exo:taxonomyLink") == 0){
+    if (currentFolder != null && currentFolder.isNodeType("exo:taxonomy")) {
       NodeIterator taxonomyNodeIterator = getViewableContents(workspace, path, filters, sessionProvider, false);
       List<Node> taxonomyNodes = new ArrayList<Node>();
       Node taxonomyNode = null, taxonomyViewNode = null;
@@ -316,13 +334,11 @@ public class WCMComposerImpl implements WCMComposer, Startable {
           }
         }
       }
-      totalSize = taxonomyNodes.size();
+      return taxonomyNodes.size();
     }
 
+    return 0;
 
-    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
-
-    return result;
   }
 
   /*
