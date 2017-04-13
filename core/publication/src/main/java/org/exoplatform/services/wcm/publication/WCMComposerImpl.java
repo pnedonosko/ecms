@@ -291,6 +291,35 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         }
       }
     }
+
+    String primaryType = "";
+    ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
+    Session session = sessionProvider.getSession(workspace, manageableRepository);
+    Node currentFolder = null;
+    if (session.getRootNode().hasNode(path.substring(1))) {
+      currentFolder = session.getRootNode().getNode(path.substring(1));
+    }
+    if (currentFolder != null && currentFolder.isNodeType("exo:taxonomy")) {
+      primaryType = "exo:taxonomyLink";
+    }
+
+    if ( primaryType.compareTo("exo:taxonomyLink") == 0){
+      NodeIterator taxonomyNodeIterator = getViewableContents(workspace, path, filters, sessionProvider, false);
+      List<Node> taxonomyNodes = new ArrayList<Node>();
+      Node taxonomyNode = null, taxonomyViewNode = null;
+      if (taxonomyNodeIterator != null) {
+        while (taxonomyNodeIterator.hasNext()) {
+          taxonomyNode = taxonomyNodeIterator.nextNode();
+          taxonomyViewNode = getViewableContent(taxonomyNode, filters);
+          if (taxonomyViewNode != null) {
+            taxonomyNodes.add(taxonomyViewNode);
+          }
+        }
+      }
+      totalSize = taxonomyNodes.size();
+    }
+
+
     Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
 
     return result;
