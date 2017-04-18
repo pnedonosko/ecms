@@ -290,7 +290,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
   }
 
   /**
-   * Check total contents' size
+   * get total contents' size
    * @param path
    * @param workspace
    * @param filters
@@ -309,7 +309,8 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     if (session.getRootNode().hasNode(path.substring(1))) {
       currentFolder = session.getRootNode().getNode(path.substring(1));
     }
-
+    //Needed to get all taxonomy nodes in order to obtain the correct totalSize after being
+    // filtered (No way to filter taxonomy in jcr side by publication properties).
     if (currentFolder != null && currentFolder.isNodeType("exo:taxonomy")) {
       NodeIterator taxonomyNodeIterator = getViewableContents(workspace, path, filters, sessionProvider, false);
       List<Node> taxonomyNodes = new ArrayList<Node>();
@@ -324,19 +325,15 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         }
       }
       totalSize = taxonomyNodes.size();
-    }
-    else if (totalSize==0) {
-        NodeIterator nodeIterator ;
-        SessionProvider systemProvider = WCMCoreUtils.getSystemSessionProvider();
-        nodeIterator = getViewableContents(workspace, path, filters, systemProvider, false);
-        if (nodeIterator != null) {
-          totalSize = nodeIterator.getSize();
-        }
+    } else if (totalSize == 0) {
+      NodeIterator nodeIterator;
+      SessionProvider systemProvider = WCMCoreUtils.getSystemSessionProvider();
+      nodeIterator = getViewableContents(workspace, path, filters, systemProvider, false);
+      if (nodeIterator != null) {
+        totalSize = nodeIterator.getSize();
       }
-
-
+    }
     return totalSize;
-
   }
 
   /*
