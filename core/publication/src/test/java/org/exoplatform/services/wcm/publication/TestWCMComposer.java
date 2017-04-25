@@ -48,7 +48,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
 	}
 
 	/**
-	 * test getContent for an non authorized node
+	 * test getPaginatedContents result size for an authorized node
 	 * @throws Exception
 	 */
 	public void testGetPaginatedContents() throws Exception{
@@ -58,11 +58,20 @@ public class TestWCMComposer extends BasePublicationTestCase {
 		//test on imported web:content
 		Result result = wcmComposer.getPaginatedContents(nodeLocation, filters, sessionProvider);
 		assertEquals(1,result.getNumTotal());
+	}
+
+	/**
+	 * test getPaginatedContents result size when FILTER_TOTAL is set
+	 * @throws Exception
+	 */
+	public void testPaginatedContentsWithFilter() throws Exception{
+		HashMap<String, String> filters = new HashMap<String, String>();
+		String folderPath = "repository:collaboration:/sites content/live";
+		NodeLocation  nodeLocation = NodeLocation.getNodeLocationByExpression(folderPath);
 		//test if FILTER_TOTAL value is already set
 		filters.put(WCMComposer.FILTER_TOTAL,"2");
-		result = wcmComposer.getPaginatedContents(nodeLocation, filters, sessionProvider);
+		Result result = wcmComposer.getPaginatedContents(nodeLocation, filters, sessionProvider);
 		assertEquals(2,result.getNumTotal());
-		result.getNumTotal();
 	}
 
   public void tearDown() throws Exception {
