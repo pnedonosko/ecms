@@ -130,7 +130,30 @@
         EcmContentSelector.prototype.RequestFailed  = function (result) {
           console.error(result.status + ' ' + result.statusText);
         };
- 
+        
+        EcmContentSelector.prototype.setCookie = function (c_name, value, exdays) {
+          var exdate = new Date();
+          exdate.setDate(exdate.getDate() + exdays);
+          var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
+          document.cookie = c_name + "=" + c_value;
+        };
+        
+        EcmContentSelector.prototype.getCookie = function (cname) {
+          var name = cname + "=";
+          var decodedCookie = decodeURIComponent(document.cookie);
+          var ca = decodedCookie.split(';');
+          for (var i = 0; i <ca.length; i++) {
+              var c = ca[i];
+              while (c.charAt(0) == ' ') {
+                    c = c.substring(1);
+              }
+              if (c.indexOf(name) == 0) {
+                 return c.substring(name.length, c.length);
+              }
+          }
+          return "";
+        };
+                       
         EcmContentSelector.prototype.initRequestXmlTree = function(typeObj, iDriver, iPath, iID) {
 	  this.initDriverExpanded =iDriver;
 	  this.initPathExpanded =iPath;
@@ -264,6 +287,8 @@
 		eXo.ecm.ECS.strConnection = url;
 		eXo.ecm.ECS.renderSubTrees(currentNode, event, url);
 		eXo.ecm.ECS.renderBreadcrumbs(currentNode);
+		eXo.ecm.ECS.setCookie("rememberedLocation", eXo.ecm.ECS.currentFolder, 10);
+		eXo.ecm.ECS.setCookie("rememberedDriverName", eXo.ecm.ECS.driverName, 10);
 		gj(document).ready(function() { gj("*[rel='tooltip']").tooltip();});
 	};
 	
@@ -1023,6 +1048,8 @@
 						strHTML += "<a href=\"" + url+"\">"+name+"</a>";		
 					}		    		    
 					editor.insertHtml(strHTML);
+					eXo.ecm.ECS.setCookie("rememberedLocation", eXo.ecm.ECS.currentFolder, 10);
+					eXo.ecm.ECS.setCookie("rememberedDriverName", eXo.ecm.ECS.driverName, 10);
 					window.close();
 					editor.OnAfterSetHTML = window.close();				
 				}
@@ -1056,7 +1083,8 @@
 	 });
          document.getElementById(eXo.ecm.ECS.components).src=url;
          document.getElementById(eXo.ecm.ECS.components).style.display="block";
-         
+         eXo.ecm.ECS.setCookie("rememberedLocation", eXo.ecm.ECS.currentFolder, 10);
+         eXo.ecm.ECS.setCookie("rememberedDriverName", eXo.ecm.ECS.driverName, 10);
          window.close();
          editor.OnAfterSetHTML = window.close();
        }
