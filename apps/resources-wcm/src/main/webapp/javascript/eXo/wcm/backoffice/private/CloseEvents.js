@@ -118,6 +118,8 @@
 	  } else {
 	    form.submit();
 	  }
+	  localStorage.removeItem('rememberedLocation');
+	  localStorage.removeItem('rememberedDriverName');
 	} ;
 	
 	/**

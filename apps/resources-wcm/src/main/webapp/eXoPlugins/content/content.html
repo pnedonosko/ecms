@@ -97,8 +97,8 @@
                                         var insertContentType = getParameterByName('insertContentType', document.URL);
                                         var subPath = getParameterByName('subPath', document.URL);
                                         var ECS = eXo.ecm.ECS;
-                                        var rememberedLocation = ECS.getCookie("rememberedLocation");
-                                        var rememberedDriverName = ECS.getCookie("rememberedDriverName");
+                                        var rememberedLocation = localStorage.getItem('rememberedLocation');
+                                        var rememberedDriverName = localStorage.getItem('rememberedDriverName');
                                         if (rememberedLocation && rememberedDriverName) {
                                            ECS.initRequestXmlTree ('editor', rememberedDriverName, '/'+rememberedLocation+'/', 'uiHomeContentSelector');
                                         } else {
