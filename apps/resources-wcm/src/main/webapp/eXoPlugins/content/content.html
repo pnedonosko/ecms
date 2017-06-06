@@ -98,9 +98,9 @@
                                         var subPath = getParameterByName('subPath', document.URL);
                                         var ECS = eXo.ecm.ECS;
                                         var rememberedLocation = localStorage.getItem('rememberedLocation');
-                                        var rememberedDriverName = localStorage.getItem('rememberedDriverName');
-                                        if (rememberedLocation && rememberedDriverName) {
-                                           ECS.initRequestXmlTree ('editor', rememberedDriverName, '/'+rememberedLocation+'/', 'uiHomeContentSelector');
+                                        var rememberedDriveName = localStorage.getItem('rememberedDriveName');
+                                        if (rememberedLocation && rememberedDriveName) {
+                                           ECS.initRequestXmlTree ('editor', rememberedDriveName, '/'+rememberedLocation+'/', 'uiHomeContentSelector');
                                         } else {
                                            ECS.buildECSTreeAccordingOfNodePath(nodePath, insertContentType, subPath);										          
                                         }

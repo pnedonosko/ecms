@@ -118,8 +118,10 @@
 	  } else {
 	    form.submit();
 	  }
-	  localStorage.removeItem('rememberedLocation');
-	  localStorage.removeItem('rememberedDriverName');
+          if (action.toLowerCase() == "saveandclose" || action.toLowerCase() == "close") {
+            localStorage.removeItem('rememberedLocation');
+            localStorage.removeItem('rememberedDriveName');
+          }
 	} ;
 	
 	/**
