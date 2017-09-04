@@ -890,7 +890,7 @@ public class Utils {
     if (node == null || !node.isNodeType("nt:file")) {
       return "";
     }
-    StringBuffer ret = new StringBuffer();
+    StringBuilder ret = new StringBuilder();
     ret.append(" - ");
     long size = 0;
     try {
@@ -898,6 +898,14 @@ public class Utils {
     } catch (Exception e) {
       LOG.error("Can not get file size", e);
     }
+
+    ret.append(formatSize(size));
+
+    return ret.toString();
+  }
+
+  public static String formatSize(long size) {
+    StringBuilder ret = new StringBuilder();
     long byteSize = size % KB;
     long kbSize = (size % MB) / KB;
     long mbSize = (size % GB) / MB;
@@ -912,6 +920,7 @@ public class Utils {
     } else {
       ret.append("1 KB");
     }
+
     return ret.toString();
   }
 
