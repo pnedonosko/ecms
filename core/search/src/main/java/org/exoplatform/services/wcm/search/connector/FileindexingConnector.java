@@ -12,17 +12,21 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.core.NodetypeConstant;
+import org.exoplatform.services.wcm.core.NodetypeUtils;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
+import org.json.JSONObject;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
+import javax.jcr.nodetype.NodeTypeManager;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -62,10 +66,25 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
             .append("    \"path\" : {\"type\" : \"keyword\"},\n")
             .append("    \"author\" : {\"type\" : \"keyword\"},\n")
             .append("    \"permissions\" : {\"type\" : \"keyword\"},\n")
-            .append("    \"createdDate\" : {\"type\" : \"date\", \"format\": \"\"epoch_millis},\n")
-            .append("    \"lastUpdatedDate\" : {\"type\" : \"date\", \"format\": \"\"epoch_millis}},\n")
+            .append("    \"createdDate\" : {\"type\" : \"date\", \"format\": \"epoch_millis\"},\n")
+            .append("    \"lastUpdatedDate\" : {\"type\" : \"date\", \"format\": \"epoch_millis\"},\n")
             .append("    \"fileType\" : {\"type\" : \"keyword\"},\n")
-            .append("    \"fileSize\" : {\"type\" : \"long\"}\n")
+            .append("    \"fileSize\" : {\"type\" : \"long\"},\n")
+            .append("    \"dc:title\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:creator\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:subject\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:description\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:publisher\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:contributor\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:date\" : {\"type\" : \"date\"},\n")
+            .append("    \"dc:resourceType\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:format\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:identifier\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:source\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:language\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:relation\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:coverage\" : {\"type\" : \"text\"},\n")
+            .append("    \"dc:rights\" : {\"type\" : \"text\"}\n")
             .append("  }\n")
             .append("}");
 
@@ -111,10 +130,6 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       if(node.hasProperty("exo:title")) {
         fields.put("title", node.getProperty("exo:title").getString());
       }
-      Node contentNode = node.getNode("jcr:content");
-      if(contentNode != null && contentNode.hasProperty("jcr:mimeType")) {
-        fields.put("fileType", contentNode.getProperty("jcr:mimeType").getString());
-      }
       if(node.hasProperty("exo:owner")) {
         fields.put("author", node.getProperty("exo:owner").getString());
       }
@@ -122,11 +137,23 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
         fields.put("createdDate", String.valueOf(node.getProperty("jcr:created").getDate().getTimeInMillis()));
       }
 
-      InputStream fileStream = contentNode.getProperty("jcr:data").getStream();
-      byte[] fileBytes = IOUtils.toByteArray(fileStream);
-      fields.put("file", Base64.getEncoder().encodeToString(fileBytes));
+      Node contentNode = node.getNode("jcr:content");
+      if(contentNode != null) {
+        if (contentNode.hasProperty("jcr:mimeType")) {
+          fields.put("fileType", contentNode.getProperty("jcr:mimeType").getString());
+        }
+        InputStream fileStream = contentNode.getProperty("jcr:data").getStream();
+        byte[] fileBytes = IOUtils.toByteArray(fileStream);
+        fields.put("file", Base64.getEncoder().encodeToString(fileBytes));
 
-      fields.put("fileSize", String.valueOf(fileBytes.length));
+        fields.put("fileSize", String.valueOf(fileBytes.length));
+
+        // Dublin Core metadata
+        Map<String, String> dublinCoreMetadata = extractDublinCoreMetadata(contentNode);
+        if(dublinCoreMetadata != null) {
+          fields.putAll(dublinCoreMetadata);
+        }
+      }
 
       return new Document(TYPE, id, null, new Date(), computePermissions(node), fields);
     } catch (RepositoryException | IOException e) {
@@ -158,6 +185,38 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       LOGGER.error("Error while fetching all nt:file nodes", e);
     }
     return allIds;
+  }
+
+  protected Map<String, String> extractDublinCoreMetadata(Node contentNode) throws RepositoryException {
+    Map<String, String> dcFields = null;
+    if (contentNode.isNodeType(NodetypeConstant.DC_ELEMENT_SET)) {
+      dcFields = new HashMap<>();
+      NodeTypeManager nodeTypeManager = repositoryService.getCurrentRepository().getNodeTypeManager();
+      PropertyDefinition[] dcPropertyDefinitions = nodeTypeManager.getNodeType(NodetypeConstant.DC_ELEMENT_SET).getPropertyDefinitions();
+      for (PropertyDefinition propertyDefinition : dcPropertyDefinitions) {
+        String propertyName = propertyDefinition.getName();
+        if (contentNode.hasProperty(propertyName)) {
+          Property property = contentNode.getProperty(propertyName);
+          String strValue;
+          if(propertyDefinition.isMultiple()) {
+            Value value = property.getValues()[0];
+            if (property.getType() == PropertyType.DATE) {
+              strValue = String.valueOf(value.getDate().toInstant().toEpochMilli());
+            } else {
+              strValue = value.getString();
+            }
+          } else {
+            if (property.getType() == PropertyType.DATE) {
+              strValue = String.valueOf(property.getDate().toInstant().toEpochMilli());
+            } else {
+              strValue = property.getString();
+            }
+          }
+          dcFields.put(propertyName, strValue);
+        }
+      }
+    }
+    return dcFields;
   }
 
   private Set<String> computePermissions(Node node) throws RepositoryException {
