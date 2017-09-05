@@ -127,22 +127,22 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       fields.put("repository", ((ManageableRepository) session.getRepository()).getConfiguration().getName());
       fields.put("workspace", session.getWorkspace().getName());
       fields.put("path", node.getPath());
-      if(node.hasProperty("exo:title")) {
-        fields.put("title", node.getProperty("exo:title").getString());
+      if(node.hasProperty(NodetypeConstant.EXO_TITLE)) {
+        fields.put("title", node.getProperty(NodetypeConstant.EXO_TITLE).getString());
       }
-      if(node.hasProperty("exo:owner")) {
-        fields.put("author", node.getProperty("exo:owner").getString());
+      if(node.hasProperty(NodetypeConstant.EXO_OWNER)) {
+        fields.put("author", node.getProperty(NodetypeConstant.EXO_OWNER).getString());
       }
       if(node.hasProperty("jcr:created")) {
         fields.put("createdDate", String.valueOf(node.getProperty("jcr:created").getDate().getTimeInMillis()));
       }
 
-      Node contentNode = node.getNode("jcr:content");
+      Node contentNode = node.getNode(NodetypeConstant.JCR_CONTENT);
       if(contentNode != null) {
-        if (contentNode.hasProperty("jcr:mimeType")) {
-          fields.put("fileType", contentNode.getProperty("jcr:mimeType").getString());
+        if (contentNode.hasProperty(NodetypeConstant.JCR_MIMETYPE)) {
+          fields.put("fileType", contentNode.getProperty(NodetypeConstant.JCR_MIMETYPE).getString());
         }
-        InputStream fileStream = contentNode.getProperty("jcr:data").getStream();
+        InputStream fileStream = contentNode.getProperty(NodetypeConstant.JCR_DATA).getStream();
         byte[] fileBytes = IOUtils.toByteArray(fileStream);
         fields.put("file", Base64.getEncoder().encodeToString(fileBytes));
 
@@ -174,7 +174,7 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
     try {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       QueryManager queryManager = session.getWorkspace().getQueryManager();
-      Query query = queryManager.createQuery("select * from nt:file", Query.SQL);
+      Query query = queryManager.createQuery("select * from " + NodetypeConstant.NT_FILE, Query.SQL);
       QueryResult result = query.execute();
       NodeIterator nodeIterator = result.getNodes();
       while(nodeIterator.hasNext()) {
