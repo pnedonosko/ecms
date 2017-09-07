@@ -131,7 +131,7 @@ public class FileSearchServiceConnector extends ElasticSearchServiceConnector {
   protected String getPreviewUrl(JSONObject jsonHit, SearchContext context) {
     JSONObject hitSource = (JSONObject) jsonHit.get("_source");
 
-    String id = (String) hitSource.get("_id");
+    String id = (String) jsonHit.get("_id");
     String author = (String) hitSource.get("author");
     String title = (String) hitSource.get("title");
     String repository = (String) hitSource.get("repository");
