@@ -19,9 +19,7 @@ import org.json.JSONObject;
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
-import javax.jcr.query.Query;
-import javax.jcr.query.QueryManager;
-import javax.jcr.query.QueryResult;
+import javax.jcr.query.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZoneId;
@@ -174,12 +172,12 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
     try {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       QueryManager queryManager = session.getWorkspace().getQueryManager();
-      Query query = queryManager.createQuery("select * from " + NodetypeConstant.NT_FILE, Query.SQL);
+      Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
       QueryResult result = query.execute();
-      NodeIterator nodeIterator = result.getNodes();
-      while(nodeIterator.hasNext()) {
-        Node node = nodeIterator.nextNode();
-        allIds.add(node.getUUID());
+      RowIterator rowIterator = result.getRows();
+      while(rowIterator.hasNext()) {
+        Row row = rowIterator.nextRow();
+        allIds.add(row.getValue("jcr:uuid").getString());
       }
     } catch (RepositoryException e) {
       LOGGER.error("Error while fetching all nt:file nodes", e);
