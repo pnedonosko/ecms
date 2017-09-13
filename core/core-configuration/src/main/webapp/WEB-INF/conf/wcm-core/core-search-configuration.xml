@@ -79,6 +79,10 @@
         <type>org.exoplatform.services.wcm.search.connector.FileIndexerListener</type>
     </component>
 
+    <component>
+        <type>org.exoplatform.services.wcm.search.FileESMigration</type>
+    </component>
+
     <external-component-plugins>
         <target-component>org.exoplatform.commons.search.index.IndexingOperationProcessor</target-component>
         <component-plugin>
