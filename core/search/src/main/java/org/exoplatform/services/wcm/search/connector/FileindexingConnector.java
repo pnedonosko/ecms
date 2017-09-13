@@ -186,6 +186,7 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
     } catch (RepositoryException e) {
       LOGGER.error("Error while fetching all nt:file nodes", e);
     }
+    LOGGER.info("####### number of files to index : " + allIds.size());
     return allIds;
   }
 
