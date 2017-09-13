@@ -9,6 +9,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.core.NodetypeConstant;
@@ -173,7 +174,10 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       QueryManager queryManager = session.getWorkspace().getQueryManager();
       Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
-      QueryResult result = query.execute();
+      QueryImpl queryImpl = (QueryImpl) query;
+      queryImpl.setOffset(offset);
+      queryImpl.setLimit(limit);
+      QueryResult result = queryImpl.execute();
       RowIterator rowIterator = result.getRows();
       while(rowIterator.hasNext()) {
         Row row = rowIterator.nextRow();
