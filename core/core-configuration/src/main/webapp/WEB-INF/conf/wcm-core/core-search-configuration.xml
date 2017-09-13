@@ -85,7 +85,7 @@
             <name>FileIndexingConnector</name>
             <set-method>addConnector</set-method>
             <type>org.exoplatform.services.wcm.search.connector.FileindexingConnector</type>
-            <description>Wiki Page ElasticSearch Indexing Connector</description>
+            <description>File ElasticSearch Indexing Connector</description>
             <init-params>
                 <properties-param>
                     <name>constructor.params</name>
