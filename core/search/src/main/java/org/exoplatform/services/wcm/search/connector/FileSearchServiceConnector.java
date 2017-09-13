@@ -20,16 +20,17 @@ import org.exoplatform.commons.api.search.data.SearchContext;
 import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.commons.search.es.ElasticSearchServiceConnector;
 import org.exoplatform.commons.search.es.client.ElasticSearchingClient;
-import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.cms.documents.DocumentService;
 import org.exoplatform.services.cms.impl.Utils;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.search.base.EcmsSearchResult;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 import org.json.simple.JSONObject;
 
+import javax.jcr.RepositoryException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.time.Instant;
@@ -47,11 +48,14 @@ public class FileSearchServiceConnector extends ElasticSearchServiceConnector {
   
   private static final Log LOG = ExoLogger.getLogger(FileSearchServiceConnector.class.getName());
 
+  private RepositoryService repositoryService;
+
   private DocumentService documentService;
 
-  public FileSearchServiceConnector(InitParams initParams, ElasticSearchingClient client) {
+  public FileSearchServiceConnector(InitParams initParams, ElasticSearchingClient client, RepositoryService repositoryService, DocumentService documentService) {
     super(initParams, client);
-    this.documentService = CommonsUtils.getService(DocumentService.class);
+    this.repositoryService = repositoryService;
+    this.documentService = documentService;
   }
 
   @Override
@@ -140,10 +144,16 @@ public class FileSearchServiceConnector extends ElasticSearchServiceConnector {
     String fileType = (String) hitSource.get("fileType");
 
     String restContextName =  WCMCoreUtils.getRestContextName();
+    String repositoryName = null;
+    try {
+      repositoryName = repositoryService.getCurrentRepository().getConfiguration().getName();
+    } catch (RepositoryException e) {
+      LOG.error("Cannot get repository name", e);
+    }
 
     StringBuffer downloadUrl = new StringBuffer();
     downloadUrl.append('/').append(restContextName).append("/jcr/").
-            append(WCMCoreUtils.getRepository().getConfiguration().getName()).append('/').
+            append(repositoryName).append('/').
             append(workspace).append(nodePath);
 
     StringBuilder url = new StringBuilder("javascript:require(['SHARED/documentPreview'], function(documentPreview) {documentPreview.init({doc:{");
@@ -177,9 +187,14 @@ public class FileSearchServiceConnector extends ElasticSearchServiceConnector {
       String encodedPath = URLEncoder.encode(path, "utf-8");
       encodedPath = encodedPath.replaceAll ("%2F", "/");    //we won't encode the slash characters in the path
       String restContextName = WCMCoreUtils.getRestContextName();
+      String repositoryName = null;
+      try {
+        repositoryName = repositoryService.getCurrentRepository().getConfiguration().getName();
+      } catch (RepositoryException e) {
+        LOG.error("Cannot get repository name", e);
+      }
       String thumbnailImage = "/" + restContextName + "/thumbnailImage/medium/" +
-                              WCMCoreUtils.getRepository().getConfiguration().getName() + 
-                              "/" + workspace + encodedPath;
+                              repositoryName + "/" + workspace + encodedPath;
       return thumbnailImage;
     } catch (UnsupportedEncodingException e) {
       LOG.error("Cannot encode path " + nodePath, e);
