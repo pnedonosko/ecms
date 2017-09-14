@@ -181,7 +181,12 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       RowIterator rowIterator = result.getRows();
       while(rowIterator.hasNext()) {
         Row row = rowIterator.nextRow();
-        allIds.add(row.getValue("jcr:uuid").getString());
+        Value uuidValue = row.getValue("jcr:uuid");
+        if(uuidValue != null) {
+          allIds.add(uuidValue.getString());
+        } else {
+          LOGGER.warn("Cannot find jcr:uuid for row");
+        }
       }
     } catch (RepositoryException e) {
       LOGGER.error("Error while fetching all nt:file nodes", e);
