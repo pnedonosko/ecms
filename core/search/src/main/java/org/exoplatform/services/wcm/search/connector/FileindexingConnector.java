@@ -1,6 +1,7 @@
 package org.exoplatform.services.wcm.search.connector;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.search.domain.Document;
 import org.exoplatform.commons.search.index.impl.ElasticIndexingServiceConnector;
 import org.exoplatform.commons.utils.CommonsUtils;
@@ -13,9 +14,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.core.NodetypeConstant;
-import org.exoplatform.services.wcm.core.NodetypeUtils;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
-import org.json.JSONObject;
 
 import javax.jcr.*;
 import javax.jcr.nodetype.NodeTypeManager;
@@ -23,9 +22,6 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -113,6 +109,10 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
 
   @Override
   public Document create(String id) {
+    if(StringUtils.isEmpty(id)) {
+      return null;
+    }
+
     try {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       Node node = session.getNodeByUUID(id);
@@ -185,7 +185,8 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
         if(uuidValue != null) {
           allIds.add(uuidValue.getString());
         } else {
-          LOGGER.warn("Cannot find jcr:uuid for row");
+          allIds.add("");
+          LOGGER.warn("Cannot find jcr:uuid for row " + StringUtils.join(row.getValues()));
         }
       }
     } catch (RepositoryException e) {
