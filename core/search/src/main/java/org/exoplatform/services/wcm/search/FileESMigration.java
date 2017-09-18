@@ -15,6 +15,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.scheduler.JobSchedulerService;
 import org.exoplatform.services.wcm.search.connector.FileindexingConnector;
 
 import javax.jcr.RepositoryException;
@@ -43,13 +44,16 @@ public class FileESMigration implements StartableClusterAware {
 
   private IndexingOperationProcessor indexingOperationProcessor;
 
+  private JobSchedulerService jobSchedulerService;
+
   private Executor executor = Executors.newSingleThreadExecutor();
 
-  public FileESMigration(IndexingService indexingService, SettingService settingService, RepositoryService repositoryService, IndexingOperationProcessor indexingOperationProcessor) {
+  public FileESMigration(IndexingService indexingService, SettingService settingService, RepositoryService repositoryService, IndexingOperationProcessor indexingOperationProcessor, JobSchedulerService jobSchedulerService) {
     this.indexingService = indexingService;
     this.settingService = settingService;
     this.repositoryService = repositoryService;
     this.indexingOperationProcessor = indexingOperationProcessor;
+    this.jobSchedulerService = jobSchedulerService;
   }
 
   @Override
@@ -93,13 +97,26 @@ public class FileESMigration implements StartableClusterAware {
     }
   }
 
-  @ExoTransactional
   public void indexInES() {
     LOG.info("Starting indexation of all files");
     indexingService.reindexAll(FileindexingConnector.TYPE);
-    // process the reindexAll operation synchronously to make sure it is done before the JCR workspace reindexation (otherwise JCR queries will not retrieve nodes)
-    indexingOperationProcessor.process();
-    settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY, SettingValue.create(true));
+    try {
+      // process the reindexAll operation synchronously to make sure it is done before the JCR workspace reindexation (otherwise JCR queries will not retrieve nodes)
+      processIndexation();
+      settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY, SettingValue.create(true));
+    } catch(Exception e) {
+      LOG.error("Error while indexing all files in ES", e);
+    }
+  }
+
+  @ExoTransactional
+  public void processIndexation() throws Exception {
+    try {
+      jobSchedulerService.pauseJob("ESBulkIndexer", "ElasticSearch");
+      indexingOperationProcessor.process();
+    } finally {
+      jobSchedulerService.resumeJob("ESBulkIndexer", "ElasticSearch");
+    }
   }
 
   private boolean isIndexationInESDone() {
