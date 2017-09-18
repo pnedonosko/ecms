@@ -16,9 +16,15 @@ import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.scheduler.JobSchedulerService;
+import org.exoplatform.services.wcm.core.NodetypeConstant;
 import org.exoplatform.services.wcm.search.connector.FileindexingConnector;
+import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import javax.servlet.ServletContext;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -69,6 +75,7 @@ public class FileESMigration implements StartableClusterAware {
             ExoContainerContext.setCurrentContainer(portalContainer);
 
             if(!indexationInESDone) {
+              printNumberOfFileToIndex();
               indexInES();
             }
 
@@ -127,5 +134,17 @@ public class FileESMigration implements StartableClusterAware {
   private boolean isJCRReindexationDone() {
     SettingValue<Boolean> done = (SettingValue<Boolean>) settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY);
     return done != null && done.getValue();
+  }
+
+  private void printNumberOfFileToIndex() {
+    try {
+      Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
+      QueryManager queryManager = session.getWorkspace().getQueryManager();
+      Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
+      QueryResult result = query.execute();
+      LOG.info("Number of files to index : " + result.getNodes().getSize());
+    } catch (RepositoryException e) {
+      LOG.error("Error while counting all nt:file to index", e);
+    }
   }
 }
