@@ -22,6 +22,7 @@ import org.exoplatform.commons.search.es.ElasticSearchServiceConnector;
 import org.exoplatform.commons.search.es.client.ElasticSearchingClient;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.cms.documents.DocumentService;
+import org.exoplatform.services.cms.drives.DriveData;
 import org.exoplatform.services.cms.impl.Utils;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
@@ -85,7 +86,17 @@ public class FileSearchServiceConnector extends ElasticSearchServiceConnector {
     String fileSize = (String) hitSource.get("fileSize");
     String createdDate = (String) hitSource.get("createdDate");
 
-    String detail = getFormattedFileSize(fileSize) + " - " + getFormattedDate(createdDate);
+    String driveName = "";
+    try {
+      DriveData driveOfNode = documentService.getDriveOfNode(nodePath);
+      if(driveOfNode != null) {
+        driveName = driveOfNode.getName() + " - ";
+      }
+    } catch (Exception e) {
+      LOG.warn("Cannot get drive of node " + nodePath, e);
+    }
+
+    String detail = driveName + getFormattedFileSize(fileSize) + " - " + getFormattedDate(createdDate);
 
     SearchResult ecmsSearchResult = new EcmsSearchResult(getUrl(nodePath),
             getPreviewUrl(jsonHit, searchContext),
