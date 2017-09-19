@@ -2,6 +2,7 @@ package org.exoplatform.services.wcm.search.connector;
 
 import org.exoplatform.commons.search.index.IndexingService;
 import org.exoplatform.commons.utils.CommonsUtils;
+import org.exoplatform.services.cms.documents.TrashService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
@@ -30,9 +31,14 @@ public class FileIndexerListener implements EventListener, Startable {
 
   private RepositoryService repositoryService;
 
-  public FileIndexerListener(IndexingService indexingService, RepositoryService repositoryService) {
+  private TrashService trashService;
+
+  private String trashHomePath;
+
+  public FileIndexerListener(IndexingService indexingService, RepositoryService repositoryService, TrashService trashService) {
     this.indexingService = indexingService;
     this.repositoryService = repositoryService;
+    this.trashService = trashService;
   }
 
   @Override
@@ -65,7 +71,11 @@ public class FileIndexerListener implements EventListener, Startable {
           case Event.NODE_ADDED:
             node = getNodeByPath(event.getPath());
             if(node != null && node.getPrimaryNodeType().getName().equals(NodetypeConstant.NT_FILE)) {
-              indexingService.index(FileindexingConnector.TYPE, node.getUUID());
+              if(isInTrash(node)) {
+                indexingService.unindex(FileindexingConnector.TYPE, node.getUUID());
+              } else {
+                indexingService.index(FileindexingConnector.TYPE, node.getUUID());
+              }
             }
             break;
           case Event.NODE_REMOVED:
@@ -95,5 +105,24 @@ public class FileIndexerListener implements EventListener, Startable {
 
   protected Node getNodeOfPropertyByPath(String path) throws RepositoryException {
     return getNodeByPath(path.substring(0, path.lastIndexOf("/") - 1));
+  }
+
+  protected boolean isInTrash(Node node) throws RepositoryException {
+    return node != null && getTrashHomePath() != null && node.getPath().startsWith(getTrashHomePath());
+  }
+
+  protected String getTrashHomePath() {
+    if(this.trashHomePath == null) {
+      Node trashHomeNode = trashService.getTrashHomeNode();
+      if(trashHomeNode != null) {
+        try {
+          trashHomePath = trashHomeNode.getPath() + "/";
+        } catch (RepositoryException e) {
+          LOGGER.error("Cannot get Trash home path", e);
+        }
+      }
+    }
+
+    return this.trashHomePath;
   }
 }
