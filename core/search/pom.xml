@@ -127,6 +127,11 @@
       <artifactId>exo.portal.component.test.jcr</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.commons</groupId>
+      <artifactId>commons-file-storage</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- need for test -->
     <dependency>
       <groupId>org.hsqldb</groupId>

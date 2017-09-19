@@ -254,11 +254,17 @@
   </component>
 
   <component>
+    <key>org.exoplatform.commons.file.services.FileService</key>
+    <type>org.exoplatform.services.wcm.search.mock.MockFileService</type>
+  </component>
+
+  <component>
     <type>org.exoplatform.commons.search.es.client.ElasticIndexingAuditTrail</type>
   </component>
 
   <component>
-    <type>org.exoplatform.commons.search.es.client.ElasticSearchingClient</type>
+    <key>org.exoplatform.commons.search.es.client.ElasticSearchingClient</key>
+    <type>org.exoplatform.services.wcm.search.mock.MockElasticSearchingClient</type>
   </component>
 
 	<component>
