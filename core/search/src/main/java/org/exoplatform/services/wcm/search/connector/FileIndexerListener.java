@@ -6,6 +6,7 @@ import org.exoplatform.services.cms.documents.TrashService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.core.NodeLocation;
@@ -65,31 +66,31 @@ public class FileIndexerListener implements EventListener, Startable {
       Event event = eventIterator.nextEvent();
 
       try {
-        Node node;
+        NodeImpl node;
 
         switch(event.getType()) {
           case Event.NODE_ADDED:
-            node = getNodeByPath(event.getPath());
+            node = (NodeImpl) getNodeByPath(event.getPath());
             if(node != null && node.getPrimaryNodeType().getName().equals(NodetypeConstant.NT_FILE)) {
               if(isInTrash(node)) {
-                indexingService.unindex(FileindexingConnector.TYPE, node.getUUID());
+                indexingService.unindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
               } else {
-                indexingService.index(FileindexingConnector.TYPE, node.getUUID());
+                indexingService.index(FileindexingConnector.TYPE, node.getInternalIdentifier());
               }
             }
             break;
           case Event.NODE_REMOVED:
-            node = getNodeByPath(event.getPath());
+            node = (NodeImpl) getNodeByPath(event.getPath());
             if(node != null && node.getPrimaryNodeType().getName().equals(NodetypeConstant.NT_FILE)) {
-              indexingService.unindex(FileindexingConnector.TYPE, node.getUUID());
+              indexingService.unindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
             }
             break;
           case Event.PROPERTY_ADDED:
           case Event.PROPERTY_CHANGED:
           case Event.PROPERTY_REMOVED:
-            node = getNodeOfPropertyByPath(event.getPath());
+            node = (NodeImpl) getNodeOfPropertyByPath(event.getPath());
             if(node != null && node.getPrimaryNodeType().getName().equals(NodetypeConstant.NT_FILE)) {
-              indexingService.reindex(FileindexingConnector.TYPE, node.getUUID());
+              indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
             }
             break;
         }

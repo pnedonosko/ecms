@@ -9,7 +9,9 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -114,8 +116,8 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
     }
 
     try {
-      Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
-      Node node = session.getNodeByUUID(id);
+      ExtendedSession session = (ExtendedSession) WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
+      Node node = session.getNodeByIdentifier(id);
 
       if(node == null || node.getPrimaryNodeType().equals(NodetypeConstant.NT_FILE)) {
         return null;
@@ -173,21 +175,16 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
     try {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       QueryManager queryManager = session.getWorkspace().getQueryManager();
-      Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
+      Query query = queryManager.createQuery("select * from " + NodetypeConstant.NT_FILE, Query.SQL);
       QueryImpl queryImpl = (QueryImpl) query;
       queryImpl.setOffset(offset);
       queryImpl.setLimit(limit);
       QueryResult result = queryImpl.execute();
-      RowIterator rowIterator = result.getRows();
-      while(rowIterator.hasNext()) {
-        Row row = rowIterator.nextRow();
-        Value uuidValue = row.getValue("jcr:uuid");
-        if(uuidValue != null) {
-          allIds.add(uuidValue.getString());
-        } else {
-          allIds.add("");
-          LOGGER.warn("Cannot find jcr:uuid for row " + StringUtils.join(row.getValues()));
-        }
+      NodeIterator nodeIterator = result.getNodes();
+      while(nodeIterator.hasNext()) {
+        NodeImpl node = (NodeImpl) nodeIterator.nextNode();
+        // use node internal identifier to be sure to have an id for all nodes
+        allIds.add(node.getInternalIdentifier());
       }
     } catch (RepositoryException e) {
       LOGGER.error("Error while fetching all nt:file nodes", e);
