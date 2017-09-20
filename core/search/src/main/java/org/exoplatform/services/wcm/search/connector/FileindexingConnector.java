@@ -130,6 +130,8 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
       fields.put("path", node.getPath());
       if(node.hasProperty(NodetypeConstant.EXO_TITLE)) {
         fields.put("title", node.getProperty(NodetypeConstant.EXO_TITLE).getString());
+      } else {
+        fields.put("title", node.getName());
       }
       if(node.hasProperty(NodetypeConstant.EXO_OWNER)) {
         fields.put("author", node.getProperty(NodetypeConstant.EXO_OWNER).getString());
