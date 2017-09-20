@@ -295,7 +295,19 @@
       </properties-param>
     </init-params>
   </component>
-	
+
+  <component>
+    <type>org.exoplatform.services.wcm.search.connector.FileApplicationSearchServiceConnector</type>
+    <init-params>
+      <properties-param>
+        <name>constructor.params</name>
+        <property name="index" value="file_alias"/>
+        <property name="type" value="file"/>
+        <property name="searchFields" value="name,title,attachment.content"/>
+      </properties-param>
+    </init-params>
+  </component>
+
 	<component>
 		<key>org.exoplatform.services.wcm.search.connector.PageSearchServiceConnector</key>
 		<type>org.exoplatform.services.wcm.search.connector.PageSearchServiceConnector</type>

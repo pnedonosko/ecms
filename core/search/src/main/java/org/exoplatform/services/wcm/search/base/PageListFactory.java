@@ -25,7 +25,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.wcm.search.QueryCriteria;
 import org.exoplatform.services.wcm.search.SiteSearchService;
-import org.exoplatform.services.wcm.search.connector.FileSearchServiceConnector;
+import org.exoplatform.services.wcm.search.connector.FileApplicationSearchServiceConnector;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 
 import javax.jcr.*;
@@ -250,9 +250,15 @@ public class PageListFactory {
             WCMCoreUtils.getUserSessionProvider();
     Session session = sessionProvider.getSession(workspace, WCMCoreUtils.getRepository());
 
-    FileSearchServiceConnector fileSearchServiceConnector = CommonsUtils.getService(FileSearchServiceConnector.class);
+    FileApplicationSearchServiceConnector fileSearchInternalServiceConnector = CommonsUtils.getService(FileApplicationSearchServiceConnector.class);
     int offset = criteria != null ? (int) criteria.getOffset() : 0;
-    Collection<SearchResult> results = fileSearchServiceConnector.search(null, criteria != null ? criteria.getKeyword() : "", null, 0, offset + AbstractPageList.RESULT_SIZE_SEPARATOR + 1, null, null);
+    Collection<SearchResult> results = fileSearchInternalServiceConnector.appSearch(workspace,
+            criteria != null ? criteria.getSearchPath() : "",
+            criteria != null ? criteria.getKeyword() : "",
+            0,
+            offset + AbstractPageList.RESULT_SIZE_SEPARATOR + 1,
+            null,
+            null);
 
     List<E> filteredResults = new ArrayList<>();
 
