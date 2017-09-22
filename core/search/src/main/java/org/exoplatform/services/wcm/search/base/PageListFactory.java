@@ -30,9 +30,7 @@ import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 
 import javax.jcr.*;
 import javax.jcr.query.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SAS
@@ -78,7 +76,10 @@ public class PageListFactory {
       results.addAll(searchInES(workspace, isSystemSession, filter, dataCreator, criteria));
     }
 
-    if(criteria.getOffset() > 0) {
+    // remove duplications
+    results = new ArrayList<>(new LinkedHashSet<>(results));
+
+    if(criteria != null && criteria.getOffset() > 0) {
       results = results.subList((int) criteria.getOffset(), results.size());
     }
 

@@ -824,8 +824,7 @@ public class TestSearchService extends BaseSearchTest {
   *
   * @throws Exception the exception
   */
-  //FIXME
-  public void TestSearchByOffsetAndLimitWithNoDuplication() throws Exception {
+  public void testSearchByOffsetAndLimitWithNoDuplication() throws Exception {
     int pageSize = 10;
     int offset = 0;
     int limit = pageSize;

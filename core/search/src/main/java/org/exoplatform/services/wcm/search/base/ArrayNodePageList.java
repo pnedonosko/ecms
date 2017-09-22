@@ -58,7 +58,7 @@ public class ArrayNodePageList<E> extends AbstractPageList<E> {
   /** Constructor */
   public ArrayNodePageList(List<E> results, int pageSize) {
     super(pageSize);
-    dataList = removeDuplication(results);
+    dataList = results;
     setAvailablePage(dataList.size());
     removeRedundantPages(dataList.size() / pageSize);
     currentListPage_ = null;
@@ -131,20 +131,6 @@ public class ArrayNodePageList<E> extends AbstractPageList<E> {
         }
       }
     }  
-  }
-  
-  private List<E> removeDuplication(List<E> srcList) {
-    List<E> ret = new ArrayList<E>();
-    Set<E> set = new HashSet<E>();
-    if (srcList != null) {
-      for (E elem : srcList) {
-        if (!set.contains(elem)) {
-          set.add(elem);
-          ret.add(elem);
-        }
-      }
-    }
-    return ret;
   }
 
   @Override
