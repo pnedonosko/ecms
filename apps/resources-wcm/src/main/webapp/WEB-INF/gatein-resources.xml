@@ -266,6 +266,9 @@
       <module>mentionsLib</module>
       <as>mentions</as>
     </depends>
+    <depends>
+      <module>suggester</module>
+    </depends>
   </module>
 </gatein-resources>
 

@@ -90,41 +90,30 @@
       }
     });
 
-    gj(".uiShareDocuments.resizable #textAreaInput").exoMentions({
-      onDataRequest : function(mode, query, callback) {
-        var url = window.location.protocol + '//' + window.location.host + '/' + eXo.env.portal.rest + '/social/people/getprofile/data.json?search=' + query;
-        gj.getJSON(url, function(responseData) {
-          responseData = _.filter(responseData, function(item) {
-            return item.name.toLowerCase().indexOf(query.toLowerCase()) > -1;
+    gj('.uiShareDocuments.resizable #textAreaInput').suggester({
+      type : "mix",
+      sourceProviders : ['exo:shareconent'],
+      showAtCaret: false,
+      renderMenuItem: '<li><div class="avatarSmall" style="display: inline-block;"><img src="${avatar}"></div>${name} (${id})</li>',
+      renderItem: '${id}',
+      providers: {
+        'exo:shareconent': function (query, callback) {
+          var url = window.location.protocol + '//' + window.location.host + '/' + eXo.env.portal.rest + '/social/people/getprofile/data.json?search=' + query;
+          gj.getJSON(url, function(responseData) {
+            responseData = _.filter(responseData, function(item) {
+              return item.name.toLowerCase().indexOf(query.toLowerCase()) > -1;
+            });
+            callback.call(this, responseData);
           });
-          callback.call(this, responseData);
-        });
-      },
-      //idAction : 'ShareButton',
-      actionLink : 'AttachButton',
-      actionMention : 'mentionButton',
-      elasticStyle : {
-        maxHeight : '80px',
-        minHeight : '80px',
-        marginButton: '4px',
-        enableMargin: false
-      },
-      messages : window.eXo.social.I18n.mentions
-    });
+        }
+      }
+    }); // End suggester component
+
     if (gj("#user").val() == "") {
       gj("#addActionBtn").attr('disabled','disabled');
     } else {
       gj("#addActionBtn").removeAttr('disabled');
     }
-  }
-
-  ShareContent.prototype.doShare = function(){
-    gj(".uiShareDocuments.resizable #textAreaInput").exoMentions('val', function(value) {
-      value = value.replace(/<br\/?>/gi, '\n').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>');
-      gj(".uiShareDocuments.resizable #textAreaInput").val(value);
-      gj(".PopupContent .uiActionBorder .btn-primary").attr("disabled","disabled");
-      gj("#shareActionBtn").trigger("click");
-    });
   }
 
   /**
