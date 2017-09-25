@@ -91,6 +91,8 @@ public class PDFViewer extends UIForm {
   final static private String PAGE_NUMBER = "pageNumber";
   final static private String SCALE_PAGE = "scalePage";
   final private String localeFile = "locale.portlet.viewer.PDFViewer";
+  private String sharedResourcesBundleNames[];
+  private ResourceBundle sharedResourceBundle=null;
   private static final int MIN_IE_SUPPORTED_BROWSER_VERSION = 9;
   private static final int MIN_FF_SUPPORTED_BROWSER_VERSION = 20;
   private static final int MIN_CHROME_SUPPORTED_BROWSER_VERSION = 20;
@@ -163,6 +165,20 @@ public class PDFViewer extends UIForm {
       return key;
     }
   }
+
+  public String getResource(String key) {
+    try {
+      Locale locale = Util.getUIPortal().getAncestorOfType(UIPortalApplication.class).getLocale();
+      ResourceBundleService resourceBundleService = WCMCoreUtils.getService(ResourceBundleService.class);
+      sharedResourcesBundleNames = resourceBundleService.getSharedResourceBundleNames();
+      sharedResourceBundle = resourceBundleService.getResourceBundle(sharedResourcesBundleNames, locale);
+
+      return sharedResourceBundle.getString(key);
+    } catch (MissingResourceException e) {
+      return key;
+    }
+  }
+
 
   private Document getDocument(Node node) throws RepositoryException, Exception {
     PDFViewerService pdfViewerService = getApplicationComponent(PDFViewerService.class);
