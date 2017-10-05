@@ -168,7 +168,7 @@ public class UIThumbnailForm extends UIForm implements UIPopupComponent {
   /**
    * return the Modified date property of the selected node
    *
-   * @param node the selected node
+   * @param node the thumbnail node of the selected node
    * @return the Modified date property
    * @throws Exception
    */
@@ -177,7 +177,7 @@ public class UIThumbnailForm extends UIForm implements UIPopupComponent {
     if (hasLastModifiedProperty) {
       return node.getProperty(ThumbnailService.THUMBNAIL_LAST_MODIFIED).getDate().getTime().toString();
     } else {
-      LOG.warn("Thumbnail last modified property doesn't exist");
+      LOG.warn("Thumbnail last modified property of the node = " + node.getPath() + " doesn't exist.");
       return null;
     }
   }
