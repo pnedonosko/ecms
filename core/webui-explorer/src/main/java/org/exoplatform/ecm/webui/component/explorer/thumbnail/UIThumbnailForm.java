@@ -22,7 +22,6 @@ import javax.imageio.ImageIO;
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
 import javax.jcr.lock.LockException;
 import javax.jcr.version.VersionException;
 
