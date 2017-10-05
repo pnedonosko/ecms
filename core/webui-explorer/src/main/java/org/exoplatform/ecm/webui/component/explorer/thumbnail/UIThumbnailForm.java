@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.lock.LockException;
 import javax.jcr.version.VersionException;
 
@@ -173,8 +174,13 @@ public class UIThumbnailForm extends UIForm implements UIPopupComponent {
    * @throws Exception
    */
   public String getThumbnailModifiedTime(Node node) throws Exception {
-    ThumbnailService thumbnailService = getApplicationComponent(ThumbnailService.class);
-    return thumbnailService.getThumbnailNode(node).getProperty(ThumbnailService.THUMBNAIL_LAST_MODIFIED).getDate().getTime().toString();
+    Property lastModified = node.getProperty(ThumbnailService.THUMBNAIL_LAST_MODIFIED);
+    if (lastModified != null) {
+      return lastModified.getDate().getTime().toString();
+    } else {
+      LOG.warn("Thumbnail last modified property doesn't exist");
+      return null;
+    }
   }
 
   static  public class SaveActionListener extends EventListener<UIThumbnailForm> {
