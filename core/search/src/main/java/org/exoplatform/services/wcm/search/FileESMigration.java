@@ -13,6 +13,7 @@ import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.RootContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.scheduler.JobSchedulerService;
@@ -98,9 +99,13 @@ public class FileESMigration implements StartableClusterAware {
       LOG.info("Starting reindexation of JCR collaboration workspace");
       SearchManager searchManager = (SearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("collaboration").getComponent(SearchManager.class);
       searchManager.reindex(false);
+      LOG.info("Starting reindexation of JCR system workspace");
+      SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
+      systemSearchManager.reindex(false);
+
       settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY, SettingValue.create(true));
     } catch (RepositoryException e) {
-      LOG.error("Error while reindexing JCR collaboration workspace", e);
+      LOG.error("Error while reindexing JCR collaboration and system workspaces", e);
     }
   }
 
