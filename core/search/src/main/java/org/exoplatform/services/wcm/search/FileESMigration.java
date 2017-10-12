@@ -138,13 +138,13 @@ public class FileESMigration implements StartableClusterAware {
   }
 
   private boolean isIndexationInESDone() {
-    SettingValue<Boolean> done = (SettingValue<Boolean>) settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY);
-    return done != null && done.getValue();
+    SettingValue<?> done = settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY);
+    return done != null && done.getValue().equals("true");
   }
 
   private boolean isJCRReindexationDone() {
-    SettingValue<Boolean> done = (SettingValue<Boolean>) settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY);
-    return done != null && done.getValue();
+    SettingValue<?> done = settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY);
+    return done != null && done.getValue().equals("true");
   }
 
   private void printNumberOfFileToIndex() {
