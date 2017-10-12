@@ -1,7 +1,7 @@
 /**
  * Created by toannh on 6/19/15.
  */
-(function(gj, _) {
+(function(gj) {
   var ShareContent = function() {}
 
   function correctSpacePos(){
@@ -100,7 +100,7 @@
         'exo:shareconent': function (query, callback) {
           var url = window.location.protocol + '//' + window.location.host + '/' + eXo.env.portal.rest + '/social/people/getprofile/data.json?search=' + query;
           gj.getJSON(url, function(responseData) {
-            responseData = _.filter(responseData, function(item) {
+            responseData = responseData.filter(function(item) {
               return item.name.toLowerCase().indexOf(query.toLowerCase()) > -1;
             });
             callback.call(this, responseData);
@@ -145,4 +145,4 @@
     ShareContent : eXo.ecm.ShareContent
   };
 
-})(gj, mentions._);
+})(gj);
