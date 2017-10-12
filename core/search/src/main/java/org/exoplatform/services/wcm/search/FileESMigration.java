@@ -75,6 +75,8 @@ public class FileESMigration implements StartableClusterAware {
           executor.execute(() -> {
             ExoContainerContext.setCurrentContainer(portalContainer);
 
+            LOG.info("== Files ES migration - Starting migration of files in ES");
+
             if(!indexationInESDone) {
               printNumberOfFileToIndex();
               indexInES();
@@ -96,37 +98,41 @@ public class FileESMigration implements StartableClusterAware {
 
   public void reindexJCR() {
     try {
-      LOG.info("Starting reindexation of JCR collaboration workspace");
+      LOG.info("== Files ES migration - Starting reindexation of JCR collaboration workspace");
       SearchManager searchManager = (SearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("collaboration").getComponent(SearchManager.class);
       searchManager.reindex(false);
-      LOG.info("Starting reindexation of JCR system workspace");
+      LOG.info("== Files ES migration - Starting reindexation of JCR system workspace");
       SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
       systemSearchManager.reindex(false);
 
       settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY, SettingValue.create(true));
     } catch (RepositoryException e) {
-      LOG.error("Error while reindexing JCR collaboration and system workspaces", e);
+      LOG.error("== Files ES migration - Error while reindexing JCR collaboration and system workspaces", e);
     }
   }
 
   public void indexInES() {
-    LOG.info("Starting indexation of all files");
+    LOG.info("== Files ES migration - Starting pushing all files in indexation queue");
     indexingService.reindexAll(FileindexingConnector.TYPE);
     try {
       // process the reindexAll operation synchronously to make sure it is done before the JCR workspace reindexation (otherwise JCR queries will not retrieve nodes)
       processIndexation();
       settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY, SettingValue.create(true));
+      LOG.info("== Files ES migration - Push of all files in indexation queue done");
     } catch(Exception e) {
-      LOG.error("Error while indexing all files in ES", e);
+      LOG.error("== Files ES migration - Error while indexing all files in ES", e);
     }
   }
 
   @ExoTransactional
   public void processIndexation() throws Exception {
     try {
+      // Pause ESBulkIndexer job to avoid concurrent executions in the process() operation
+      LOG.info("== Files ES migration - Pause ESBulkIndexer job");
       jobSchedulerService.pauseJob("ESBulkIndexer", "ElasticSearch");
       indexingOperationProcessor.process();
     } finally {
+      LOG.info("== Files ES migration - Resume ESBulkIndexer job");
       jobSchedulerService.resumeJob("ESBulkIndexer", "ElasticSearch");
     }
   }
@@ -147,9 +153,9 @@ public class FileESMigration implements StartableClusterAware {
       QueryManager queryManager = session.getWorkspace().getQueryManager();
       Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
       QueryResult result = query.execute();
-      LOG.info("Number of files to index : " + result.getNodes().getSize());
+      LOG.info("== Files ES migration - Number of files to index : " + result.getNodes().getSize());
     } catch (RepositoryException e) {
-      LOG.error("Error while counting all nt:file to index", e);
+      LOG.error("== Files ES migration - Error while counting all nt:file to index", e);
     }
   }
 }
