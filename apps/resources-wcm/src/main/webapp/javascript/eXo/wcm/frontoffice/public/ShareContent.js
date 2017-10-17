@@ -92,12 +92,12 @@
 
     gj('.uiShareDocuments.resizable #textAreaInput').suggester({
       type : "mix",
-      sourceProviders : ['exo:shareconent'],
+      sourceProviders : ['exo:sharecontent'],
       showAtCaret: false,
       renderMenuItem: '<li><div class="avatarSmall" style="display: inline-block;"><img src="${avatar}"></div>${name} (${id})</li>',
       renderItem: '${id}',
       providers: {
-        'exo:shareconent': function (query, callback) {
+        'exo:sharecontent': function (query, callback) {
           var url = window.location.protocol + '//' + window.location.host + '/' + eXo.env.portal.rest + '/social/people/getprofile/data.json?search=' + query;
           gj.getJSON(url, function(responseData) {
             responseData = responseData.filter(function(item) {
