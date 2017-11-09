@@ -151,7 +151,7 @@ public class FileESMigration implements StartableClusterAware {
     try {
       Session session = WCMCoreUtils.getSystemSessionProvider().getSession("collaboration", repositoryService.getCurrentRepository());
       QueryManager queryManager = session.getWorkspace().getQueryManager();
-      Query query = queryManager.createQuery("select jcr:uuid from " + NodetypeConstant.NT_FILE, Query.SQL);
+      Query query = queryManager.createQuery("select * from " + NodetypeConstant.NT_FILE, Query.SQL);
       QueryResult result = query.execute();
       LOG.info("== Files ES migration - Number of files to index : " + result.getNodes().getSize());
     } catch (RepositoryException e) {
