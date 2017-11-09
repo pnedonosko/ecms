@@ -8,23 +8,6 @@
   </parent>
   <artifactId>ecms-core-search</artifactId>
   <name>eXo PLF:: WCM Search Service</name>
-  <properties>
-    <org.powermock.version>1.6.5</org.powermock.version>
-  </properties>
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-module-junit4</artifactId>
-        <version>${org.powermock.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.powermock</groupId>
-        <artifactId>powermock-api-mockito</artifactId>
-        <version>${org.powermock.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>commons-lang</groupId>
