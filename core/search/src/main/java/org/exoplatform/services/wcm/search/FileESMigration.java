@@ -100,10 +100,10 @@ public class FileESMigration implements StartableClusterAware {
     try {
       LOG.info("== Files ES migration - Starting reindexation of JCR collaboration workspace");
       SearchManager searchManager = (SearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("collaboration").getComponent(SearchManager.class);
-      searchManager.reindex(false);
+      searchManager.reindex(false, 0);
       LOG.info("== Files ES migration - Starting reindexation of JCR system workspace");
       SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
-      systemSearchManager.reindex(false);
+      systemSearchManager.reindex(false, 0);
 
       settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY, SettingValue.create(true));
     } catch (RepositoryException e) {
