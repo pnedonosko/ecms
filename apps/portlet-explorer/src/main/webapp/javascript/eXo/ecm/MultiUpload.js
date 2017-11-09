@@ -963,21 +963,13 @@
 			  var uri = eXo.ecm.MultiUpload.restContext + "/wcmDriver/uploadFile/cleanName?" + "fileName=" + fileName;
 			  gj.ajax({url: uri, 
 			    async: false, //blocks window close
-			    dataType: (gj.browser.msie) ? "text" : "xml",
+			    dataType: "xml",
 			    accepts: {
 			      xml: "text/xml",
 			      text: "text/xml"
 			    },
 			    success: function(result, status, xhr) {
-			      var xml;
-			      if (gj.browser.msie) {
-			        xml = new ActiveXObject("Microsoft.XMLDOM");
-			        xml.async = false;
-			        xml.loadXML(result);
-			      } else {
-			        xml = result;
-			      }
-			      var newFileName = gj(xml).find("name").text();
+			      var newFileName = gj(result).find("name").text();
 			      if (newFileName) {
 			        fileName = newFileName;
 			      }
@@ -994,7 +986,7 @@
 		  		  	eXo.ecm.MultiUpload.restContext + "/thumbnailImage/small/repository/" +
 		  		  	eXo.ecm.MultiUpload.ws + nodePath + "'>";
 		  		  // If can not preview image, set back to default icon
-		  		  gj(gj(icon).find("img:first")[0]).error(function() {
+		  		  gj(gj(icon).find("img:first")[0]).on("error", function() {
 							gj(icon).html(iconHTMLForImageLoadFail);
 							var iDiv = gj("i", icon);
 							var className = iDiv.attr('class');

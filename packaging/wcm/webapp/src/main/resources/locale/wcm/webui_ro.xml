@@ -38,6 +38,8 @@
       <SharedSite>Site partajat</SharedSite>
       <PersonalDocuments>Personal Documents</PersonalDocuments>
       <UserDocuments>{0} Documents</UserDocuments>
+      <Collaboration>Colaborare</Collaboration>
+      <Trash>Coşul de gunoi</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Configurare pagină de coloană</ColumnPageConfigs>
       <RowPageConfigs>Configurare pagină de rând</RowPageConfigs>
       <TabsPageConfigs>Configurare pagină TAB-uri</TabsPageConfigs>
-      <MixPageConfigs>Configurare pagina MIX</MixPageConfigs>
+      <MixPageConfigs>Mixed</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -445,4 +447,10 @@
   <home>Acasă</home>
   </label>  
   </Breadcrumb>
+
+  <UIViewMetadataForm>
+    <msg>
+      <Invalid-number>Please enter a valid number.</Invalid-number>
+    </msg>
+  </UIViewMetadataForm>
 </bundle>

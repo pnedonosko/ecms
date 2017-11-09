@@ -65,10 +65,6 @@
       actionArea.onmouseout = Self.mouseOutGround;
           actionArea.onfocus = Self.mouseOverGround;
           actionArea.onblur = Self.mouseOutGround;
-      gj("div.FillOutElement").remove();
-      var fillOutElement = document.createElement('div');
-      fillOutElement.className = "FillOutElement";
-      actionArea.appendChild(fillOutElement);
       //remove context menu
       var contextMenu = document.getElementById(Self.contextMenuId);
       if (contextMenu) contextMenu.parentNode.removeChild(contextMenu);
@@ -1062,7 +1058,7 @@
              this.parentNode.parentNode.parentNode.style.height = 'auto';
            }
            this.style.display = 'none';
-           this.parentNode.style.backgroundImage = "url("+this.src+")";
+           this.parentNode.style.backgroundImage = "url(\""+this.src+"\")";
            gj(this.parentNode).width(gj(this).width());
            gj(this.parentNode).height(gj(this).height());
         }).each(function() {

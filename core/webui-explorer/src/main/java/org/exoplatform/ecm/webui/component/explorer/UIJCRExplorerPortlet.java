@@ -34,6 +34,7 @@ import org.exoplatform.services.cms.documents.AutoVersionService;
 import org.exoplatform.services.cms.drives.DriveData;
 import org.exoplatform.services.cms.drives.ManageDriveService;
 import org.exoplatform.services.cms.drives.impl.ManageDriveServiceImpl;
+import org.exoplatform.services.cms.link.NodeFinder;
 import org.exoplatform.services.cms.views.ManageViewService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
@@ -96,6 +97,8 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
 
   final static private String DOC_NOT_FOUND    = "doc-not-found";
 
+  private NodeFinder nodeFinder;
+
   private String backTo ="";
 
   private boolean flagSelect = false;
@@ -108,6 +111,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
       explorerContainer.initExplorer();
       addChild(UIJcrExplorerEditContainer.class, null, null).setRendered(false);
     }
+    nodeFinder = getApplicationComponent(NodeFinder.class);
   }
 
   public boolean isFlagSelect() { return flagSelect; }
@@ -205,7 +209,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
                uiExplorer.getWorkspaceName()  + "','" + 
                uiExplorer.getDriveData().getName()  + "','" +
                uiTreeExplorer.getLabel()  + "','" +
-               uiExplorer.getCurrentPath() + "','" +
+               Text.escapeIllegalJcrChars(uiExplorer.getCurrentPath()) + "','" +
                org.exoplatform.services.cms.impl.Utils.getPersonalDrivePath(uiExplorer.getDriveData().getHomePath(),
                ConversationState.getCurrent().getIdentity().getUserId())+ "', '"+
               autoVersionService.isVersionSupport(uiExplorer.getCurrentPath(), uiExplorer.getCurrentWorkspace())+"');")
@@ -287,6 +291,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
       if (requestParamName.equals("path")) {
         String nodePathParam = pcontext.getRequestParameter("path");
         String currentRepo = WCMCoreUtils.getRepository().getConfiguration().getName();
+        String userId = Util.getPortalRequestContext().getRemoteUser();
         if (nodePathParam != null && nodePathParam.length() > 0) {
           Pattern patternUrl = Pattern.compile("([^/]+)/(.*)");
           matcher = patternUrl.matcher(nodePathParam);
@@ -294,6 +299,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
             mapParam.put("repository", currentRepo);
             mapParam.put("drive", matcher.group(1));
             mapParam.put("path", matcher.group(2));
+            mapParam.put("userId",userId);
           } else {
             patternUrl = Pattern.compile("(.*)");
             matcher = patternUrl.matcher(nodePathParam);
@@ -419,9 +425,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
     try {
       Session session = 
         WCMCoreUtils.getUserSessionProvider().getSession(driveData.getWorkspace(), rservice.getCurrentRepository());
-      // check if it exists
-      // we assume that the path is a real path
-      session.getItem(contentRealPath);
+      nodeFinder.getItem(session, contentRealPath);
     } catch(AccessDeniedException ace) {
       Object[] args = { driveName };
       uiApp.addMessage(new ApplicationMessage("UIDrivesArea.msg.access-denied", args,

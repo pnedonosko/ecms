@@ -38,6 +38,8 @@
       <SharedSite>Delt nettsted</SharedSite>
       <PersonalDocuments>Personal Documents</PersonalDocuments>
       <UserDocuments>{0} Documents</UserDocuments>
+      <Collaboration>Samhandling</Collaboration>
+      <Trash>Søppel</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Kolonne sidekonfigurering</ColumnPageConfigs>
       <RowPageConfigs>Rad sidekonfigurering</RowPageConfigs>
       <TabsPageConfigs>Fane sidekonfigurering</TabsPageConfigs>
-      <MixPageConfigs>Blandet sidekonfigurering</MixPageConfigs>
+      <MixPageConfigs>Mixed</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -445,4 +447,10 @@
   <home>Hjem</home>
   </label>  
   </Breadcrumb>
+
+  <UIViewMetadataForm>
+    <msg>
+      <Invalid-number>Please enter a valid number.</Invalid-number>
+    </msg>
+  </UIViewMetadataForm>
 </bundle>

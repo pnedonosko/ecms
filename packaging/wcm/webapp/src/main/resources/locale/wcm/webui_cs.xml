@@ -38,6 +38,8 @@
       <SharedSite>Sdílený web</SharedSite>
       <PersonalDocuments>Personal Documents</PersonalDocuments>
       <UserDocuments>{0} Documents</UserDocuments>
+      <Collaboration>Spolupráce</Collaboration>
+      <Trash>Koš</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Nastavení sloupcové stránky</ColumnPageConfigs>
       <RowPageConfigs>Nastavení řádkové stránky</RowPageConfigs>
       <TabsPageConfigs>Nastavení stránky s taby</TabsPageConfigs>
-      <MixPageConfigs>Nastavení smíšené stránky</MixPageConfigs>
+      <MixPageConfigs>Mixed</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -445,4 +447,10 @@
   <home>Domovská stránka</home>
   </label>  
   </Breadcrumb>
+
+  <UIViewMetadataForm>
+    <msg>
+      <Invalid-number>Please enter a valid number.</Invalid-number>
+    </msg>
+  </UIViewMetadataForm>
 </bundle>

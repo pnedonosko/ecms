@@ -38,6 +38,8 @@
       <SharedSite>Mesto v skupni rabi</SharedSite>
       <PersonalDocuments>Osebni dokumenti</PersonalDocuments>
       <UserDocuments>Dokumentov: {0}</UserDocuments>
+      <Collaboration>Sodelovanje</Collaboration>
+      <Trash>Smeti</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Konfiguracije strani s stolpci</ColumnPageConfigs>
       <RowPageConfigs>Konfiguracije strani z vrsticami</RowPageConfigs>
       <TabsPageConfigs>Konfiguracije strani z zavihki</TabsPageConfigs>
-      <MixPageConfigs>Konfiguracije Mix strani</MixPageConfigs>
+      <MixPageConfigs>Mixed</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -445,4 +447,10 @@
   <home>Domov</home>
   </label>  
   </Breadcrumb>
+
+  <UIViewMetadataForm>
+    <msg>
+      <Invalid-number>Please enter a valid number.</Invalid-number>
+    </msg>
+  </UIViewMetadataForm>
 </bundle>

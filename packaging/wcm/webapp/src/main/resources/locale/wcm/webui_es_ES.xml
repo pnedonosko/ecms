@@ -38,6 +38,8 @@
       <SharedSite>Sitio compartido</SharedSite>
       <PersonalDocuments>Documentos personales</PersonalDocuments>
       <UserDocuments>{0} Documentos</UserDocuments>
+      <Collaboration>Colaboración</Collaboration>
+      <Trash>Zafacón</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Configuraciones de Columna de Página</ColumnPageConfigs>
       <RowPageConfigs>Configuraciones de la fila de la Página</RowPageConfigs>
       <TabsPageConfigs>Configuraciones de Tabs de Página</TabsPageConfigs>
-      <MixPageConfigs>Configuraciones de página Mix</MixPageConfigs>
+      <MixPageConfigs>Mixed</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -445,4 +447,10 @@
   <home>Inicio</home>
   </label>  
   </Breadcrumb>
+
+  <UIViewMetadataForm>
+    <msg>
+      <Invalid-number>Please enter a valid number.</Invalid-number>
+    </msg>
+  </UIViewMetadataForm>
 </bundle>
