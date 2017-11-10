@@ -187,6 +187,7 @@ public class UISearchResult extends UIContainer {
     QueryCriteria queryCriteria = new QueryCriteria();
     queryCriteria.setKeyword(keyword);
     queryCriteria.setSearchPath(uiExplorer.getCurrentPath());
+    queryCriteria.setSearchWebpage(false);
 
     pageList = PageListFactory.createPageList(queryData_.getQueryStatement(),
                                               queryData_.getWorkSpace(),

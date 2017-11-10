@@ -69,7 +69,7 @@ public class QueryCriteria {
   private DatetimeRange lastModifiedDateRange = null;
 
   /** The search webpage. */
-  private boolean searchWebpage = false;
+  private boolean searchWebpage = true;
 
   /** The search document. */
   private boolean searchDocument = true;
