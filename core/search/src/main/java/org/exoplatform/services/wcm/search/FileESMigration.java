@@ -27,8 +27,7 @@ import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 import javax.servlet.ServletContext;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
  * Startable service to index all files in Elasticsearch
@@ -41,7 +40,9 @@ public class FileESMigration implements StartableClusterAware {
 
   public static final String FILE_ES_INDEXATION_DONE_KEY = "FILE_ES_INDEXATION_DONE";
 
-  public static final String FILE_JCR_REINDEXATION_DONE_KEY = "FILE_JCR_REINDEXATION_DONE";
+  public static final String FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY = "FILE_JCR_COLLABORATION_REINDEXATION_DONE";
+
+  public static final String FILE_JCR_SYSTEM_REINDEXATION_DONE_KEY = "FILE_JCR_SYSTEM_REINDEXATION_DONE";
 
   private IndexingService indexingService;
 
@@ -98,14 +99,36 @@ public class FileESMigration implements StartableClusterAware {
 
   public void reindexJCR() {
     try {
-      LOG.info("== Files ES migration - Starting reindexation of JCR collaboration workspace");
       SearchManager searchManager = (SearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("collaboration").getComponent(SearchManager.class);
-      searchManager.reindex(false, 0);
-      LOG.info("== Files ES migration - Starting reindexation of JCR system workspace");
-      SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
-      systemSearchManager.reindex(false, 0);
 
-      settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY, SettingValue.create(true));
+      if(!isJCRCollaboraionReindexationDone()) {
+        LOG.info("== Files ES migration - Starting reindexation of JCR collaboration workspace");
+        CompletableFuture<Boolean> reindexCollaborationWSResult = searchManager.reindexWorkspace(false, 0);
+        reindexCollaborationWSResult.thenAccept(successful -> {
+          if (successful) {
+            LOG.info("== Files ES migration - Reindexation of JCR collaboration workspace done");
+            settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY, SettingValue.create(true));
+          } else {
+            LOG.error("== Files ES migration - Reindexation of JCR collaboration workspace failed. " +
+                    "Check logs to fix the issue, then reindex it by restarting the server");
+          }
+        });
+      }
+
+      if(!isJCRSystemReindexationDone()) {
+        LOG.info("== Files ES migration - Starting reindexation of JCR system workspace");
+        SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
+        CompletableFuture<Boolean> reindexSystemWSResult = systemSearchManager.reindexWorkspace(false, 0);
+        reindexSystemWSResult.thenAccept(successful -> {
+          if (successful) {
+            LOG.info("== Files ES migration - Reindexation of JCR system workspace done");
+            settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY, SettingValue.create(true));
+          } else {
+            LOG.error("== Files ES migration - Reindexation of JCR system workspace failed. " +
+                    "Check logs to fix the issue, then reindex it by restarting the server");
+          }
+        });
+      }
     } catch (RepositoryException e) {
       LOG.error("== Files ES migration - Error while reindexing JCR collaboration and system workspaces", e);
     }
@@ -143,7 +166,16 @@ public class FileESMigration implements StartableClusterAware {
   }
 
   private boolean isJCRReindexationDone() {
-    SettingValue<?> done = settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_REINDEXATION_DONE_KEY);
+    return isJCRCollaboraionReindexationDone() && isJCRSystemReindexationDone();
+  }
+
+  private boolean isJCRCollaboraionReindexationDone() {
+    SettingValue<?> done = settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY);
+    return done != null && done.getValue().equals("true");
+  }
+
+  private boolean isJCRSystemReindexationDone() {
+    SettingValue<?> done = settingService.get(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_SYSTEM_REINDEXATION_DONE_KEY);
     return done != null && done.getValue().equals("true");
   }
 
