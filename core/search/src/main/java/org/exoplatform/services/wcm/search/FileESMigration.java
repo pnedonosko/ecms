@@ -94,7 +94,7 @@ public class FileESMigration implements StartableClusterAware {
 
   @Override
   public boolean isDone() {
-    return isIndexationInESDone();
+    return isIndexationInESDone() && isJCRReindexationDone();
   }
 
   public void reindexJCR() {
@@ -122,7 +122,7 @@ public class FileESMigration implements StartableClusterAware {
         reindexSystemWSResult.thenAccept(successful -> {
           if (successful) {
             LOG.info("== Files ES migration - Reindexation of JCR system workspace done");
-            settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY, SettingValue.create(true));
+            settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_SYSTEM_REINDEXATION_DONE_KEY, SettingValue.create(true));
           } else {
             LOG.error("== Files ES migration - Reindexation of JCR system workspace failed. " +
                     "Check logs to fix the issue, then reindex it by restarting the server");
