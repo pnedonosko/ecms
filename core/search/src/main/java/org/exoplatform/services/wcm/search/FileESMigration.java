@@ -30,7 +30,10 @@ import javax.servlet.ServletContext;
 import java.util.concurrent.*;
 
 /**
- * Startable service to index all files in Elasticsearch
+ * Startable service to index all files in Elasticsearch.The process:
+ *  - add REINDEX_ALL operation in indexing queue for files
+ *  - process the indexing queue for files (which will process the REINDEX_ALL operation) to fill it with all files to index in ES
+ *  - launch hot reindexing of JCR workspaces (collaboration and system) asynchronously
  */
 public class FileESMigration implements StartableClusterAware {
 
@@ -80,7 +83,7 @@ public class FileESMigration implements StartableClusterAware {
 
             if(!indexationInESDone) {
               printNumberOfFileToIndex();
-              indexInES();
+              pushAllFilesInESIndexingQueue();
             }
 
             if(!jcrReindexationDone) {
@@ -134,12 +137,12 @@ public class FileESMigration implements StartableClusterAware {
     }
   }
 
-  public void indexInES() {
+  public void pushAllFilesInESIndexingQueue() {
     LOG.info("== Files ES migration - Starting pushing all files in indexation queue");
     indexingService.reindexAll(FileindexingConnector.TYPE);
     try {
       // process the reindexAll operation synchronously to make sure it is done before the JCR workspace reindexation (otherwise JCR queries will not retrieve nodes)
-      processIndexation();
+      processReindexingOperation();
       settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_ES_INDEXATION_DONE_KEY, SettingValue.create(true));
       LOG.info("== Files ES migration - Push of all files in indexation queue done");
     } catch(Exception e) {
@@ -148,15 +151,15 @@ public class FileESMigration implements StartableClusterAware {
   }
 
   @ExoTransactional
-  public void processIndexation() throws Exception {
+  public void processReindexingOperation() throws Exception {
     try {
       // Pause ESBulkIndexer job to avoid concurrent executions in the process() operation
-      LOG.info("== Files ES migration - Pause ESBulkIndexer job");
-      jobSchedulerService.pauseJob("ESBulkIndexer", "ElasticSearch");
-      indexingOperationProcessor.process();
+      LOG.info("== Files ES migration - Pause files scheduled indexation");
+      indexingOperationProcessor.getConnectors().get(FileindexingConnector.TYPE).setEnable(false);
+      indexingOperationProcessor.processByEntityType(FileindexingConnector.TYPE);
     } finally {
-      LOG.info("== Files ES migration - Resume ESBulkIndexer job");
-      jobSchedulerService.resumeJob("ESBulkIndexer", "ElasticSearch");
+      LOG.info("== Files ES migration - Resume files scheduled indexation");
+      indexingOperationProcessor.getConnectors().get(FileindexingConnector.TYPE).setEnable(true);
     }
   }
 
