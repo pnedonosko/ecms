@@ -155,11 +155,11 @@ public class FileESMigration implements StartableClusterAware {
     try {
       // Pause ESBulkIndexer job to avoid concurrent executions in the process() operation
       LOG.info("== Files ES migration - Pause files scheduled indexation");
-      indexingOperationProcessor.getConnectors().get(FileindexingConnector.TYPE).setEnable(false);
+      jobSchedulerService.pauseJob("ESBulkIndexer-" + FileindexingConnector.TYPE, "ElasticSearch");
       indexingOperationProcessor.processByEntityType(FileindexingConnector.TYPE);
     } finally {
       LOG.info("== Files ES migration - Resume files scheduled indexation");
-      indexingOperationProcessor.getConnectors().get(FileindexingConnector.TYPE).setEnable(true);
+      jobSchedulerService.resumeJob("ESBulkIndexer-" + FileindexingConnector.TYPE, "ElasticSearch");
     }
   }
 
