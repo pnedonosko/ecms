@@ -297,7 +297,7 @@ public class EmailNotifyListener implements EventListener {
    * @param observedNode
    * @return
    */
-  public List<String> getEmailList(Node observedNode) {
+  private List<String> getEmailList(Node observedNode) {
     List<String> emailList = new ArrayList<String>() ;
     OrganizationService orgService = WCMCoreUtils.getService(OrganizationService.class);
     try{
