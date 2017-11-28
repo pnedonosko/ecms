@@ -76,6 +76,8 @@ public class EmailNotifyListener implements EventListener {
 
   private NodeLocation observedNode_ ;
 
+  private NotificationCompletionService notificationCompletionService;
+
   final public static String  EMAIL_WATCHERS_PROP = "exo:emailWatcher";
 
   private static final String SITE_EXPLORER       = "siteExplorer";
@@ -96,6 +98,8 @@ public class EmailNotifyListener implements EventListener {
 
   public EmailNotifyListener(Node oNode) {
     observedNode_ = NodeLocation.getNodeLocationByNode(oNode);
+    notificationCompletionService = CommonsUtils.getService(NotificationCompletionService.class);
+
   }
 
   /**
@@ -107,7 +111,6 @@ public class EmailNotifyListener implements EventListener {
     MailService mailService = WCMCoreUtils.getService(MailService.class);
     WatchDocumentServiceImpl watchService = (WatchDocumentServiceImpl)WCMCoreUtils.getService(WatchDocumentService.class);
     MessageConfig messageConfig = watchService.getMessageConfig();
-    NotificationCompletionService notificationCompletionService = CommonsUtils.getService(NotificationCompletionService.class);
     Callable<Boolean> task = null;
     //check the modified properties when an action is done
     for(EventImpl entity : entities) {
