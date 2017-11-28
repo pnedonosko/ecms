@@ -108,12 +108,16 @@ public class FileESMigration implements StartableClusterAware {
         LOG.info("== Files ES migration - Starting reindexation of JCR collaboration workspace");
         CompletableFuture<Boolean> reindexCollaborationWSResult = searchManager.reindexWorkspace(false, 0);
         reindexCollaborationWSResult.thenAccept(successful -> {
-          if (successful) {
+          if (successful && !Thread.currentThread().isInterrupted()) {
             LOG.info("== Files ES migration - Reindexation of JCR collaboration workspace done");
             settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_COLLABORATION_REINDEXATION_DONE_KEY, SettingValue.create(true));
           } else {
-            LOG.error("== Files ES migration - Reindexation of JCR collaboration workspace failed. " +
-                    "Check logs to fix the issue, then reindex it by restarting the server");
+            if(Thread.currentThread().isInterrupted()) {
+              LOG.error("== Files ES migration - Reindexation of JCR collaboration workspace has been interrupted. Reindex it by restarting the server");
+            } else {
+              LOG.error("== Files ES migration - Reindexation of JCR collaboration workspace failed. " +
+                      "Check logs to fix the issue, then reindex it by restarting the server");
+            }
           }
         });
       }
@@ -123,12 +127,16 @@ public class FileESMigration implements StartableClusterAware {
         SystemSearchManager systemSearchManager = (SystemSearchManager) repositoryService.getCurrentRepository().getWorkspaceContainer("system").getComponent(SystemSearchManager.class);
         CompletableFuture<Boolean> reindexSystemWSResult = systemSearchManager.reindexWorkspace(false, 0);
         reindexSystemWSResult.thenAccept(successful -> {
-          if (successful) {
+          if (successful && !Thread.currentThread().isInterrupted()) {
             LOG.info("== Files ES migration - Reindexation of JCR system workspace done");
             settingService.set(Context.GLOBAL, Scope.GLOBAL.id(FILE_ES_INDEXATION_KEY), FILE_JCR_SYSTEM_REINDEXATION_DONE_KEY, SettingValue.create(true));
           } else {
-            LOG.error("== Files ES migration - Reindexation of JCR system workspace failed. " +
-                    "Check logs to fix the issue, then reindex it by restarting the server");
+            if(Thread.currentThread().isInterrupted()) {
+              LOG.error("== Files ES migration - Reindexation of JCR system workspace has been interrupted. Reindex it by restarting the server");
+            } else {
+              LOG.error("== Files ES migration - Reindexation of JCR system workspace failed. " +
+                      "Check logs to fix the issue, then reindex it by restarting the server");
+            }
           }
         });
       }
