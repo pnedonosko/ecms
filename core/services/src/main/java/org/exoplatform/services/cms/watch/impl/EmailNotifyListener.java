@@ -103,52 +103,38 @@ public class EmailNotifyListener implements EventListener {
    * message is sent to list of email
    */
   public void onEvent(EventIterator arg0) {
-    sendAsynchronousMessage(arg0);
-  }
-
-  /**
-   * This method is used to send Asynchronous message
-   *
-   * @param arg0
-   * @return Future
-   */
-  private void sendAsynchronousMessage(final EventIterator arg0) {
-    List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
-    boolean editFile = false;
     List<EventImpl> entities = ((EntityCollection) arg0).getList();
     MailService mailService = WCMCoreUtils.getService(MailService.class);
     WatchDocumentServiceImpl watchService = (WatchDocumentServiceImpl)WCMCoreUtils.getService(WatchDocumentService.class);
     MessageConfig messageConfig = watchService.getMessageConfig();
+    NotificationCompletionService notificationCompletionService = CommonsUtils.getService(NotificationCompletionService.class);
+    Callable<Boolean> task = null;
     //check the modified properties when an action is done
     for(EventImpl entity : entities) {
       if ((entity.getPath().contains(EXO_LANGUAGE_PROPERTY)) || (entity.getPath().contains(JCR_DATA_PROPERTY)) || (entity.getPath().contains(DC_SOURCE_PROPERTY)) ||
               (entity.getPath().contains(DC_DESCRIPTION_PROPERTY)) || (entity.getPath().contains(DC_TITLE_PROPERTY)) || (entity.getPath().contains(DC_CREATOR_PROPERTY))) {
-        editFile = true;
-      }
-    }
-    if (editFile) {
-      for (String receiver : emailList) {
-        try {
-          Message message = createMessage(receiver, messageConfig);
-          Callable<Boolean> task = new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-              boolean created = NotificationSessionManager.createSystemProvider();
-              try {
-                mailService.sendMessage(message);
-              } catch (Exception e) {
-                LOG.error("Failed to send a message", e);
-                return false;
-              } finally {
-                NotificationSessionManager.closeSessionProvider(created);
+        List<String> emailList = getEmailList(NodeLocation.getNodeByLocation(observedNode_));
+        for (String receiver : emailList) {
+          try {
+            Message message = createMessage(receiver, messageConfig);
+            task = new Callable<Boolean>() {
+              @Override
+              public Boolean call() throws Exception {
+                boolean created = NotificationSessionManager.createSystemProvider();
+                try {
+                  mailService.sendMessage(message);
+                } catch (Exception e) {
+                  LOG.error("Failed to send a message", e);
+                  return false;
+                } finally {
+                  NotificationSessionManager.closeSessionProvider(created);
+                }
+                return true;
               }
-              return true;
-            }
-          };
-          CommonsUtils.getService(NotificationCompletionService.class).addTask(task);
-        } catch (Exception e) {
-          if (LOG.isErrorEnabled()) {
-            LOG.error("Unexpected error", e);
+            };
+            notificationCompletionService.addTask(task);
+          } catch (Exception e) {
+            LOG.error("Unexpected error while sending notification email to " + receiver);
           }
         }
       }
@@ -311,7 +297,7 @@ public class EmailNotifyListener implements EventListener {
    * @param observedNode
    * @return
    */
-  private List<String> getEmailList(Node observedNode) {
+  public List<String> getEmailList(Node observedNode) {
     List<String> emailList = new ArrayList<String>() ;
     OrganizationService orgService = WCMCoreUtils.getService(OrganizationService.class);
     try{
