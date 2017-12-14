@@ -94,10 +94,10 @@ public class UICLVManualMode extends UICLVContainer {
 
     String strQuery = this.getAncestorOfType(UICLVPortlet.class).getQueryStatement(query);
     if (strQuery != null) strQuery = strQuery.replaceAll("\"", "'");
+    String[] contentList = portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null).split(";");
     if (this.getAncestorOfType(UICLVPortlet.class).isQueryApplication()
         && UICLVPortlet.PREFERENCE_CONTEXTUAL_FOLDER_ENABLE.equals(contextualMode)
         && org.exoplatform.wcm.webui.Utils.checkQuery(workspace, strQuery, Query.SQL)) {
-      String[] contentList = portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null).split(";");
       if (contentList != null && contentList.length != 0) {
         for (String itemPath : contentList) {
           itemPath = itemPath.replace("{siteName}", Util.getPortalRequestContext().getSiteName());
@@ -129,12 +129,11 @@ public class UICLVManualMode extends UICLVContainer {
         }
       }
     } else {
-      String[] listContent = portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null).split(";");
       LinkManager linkManager = WCMCoreUtils.getService(LinkManager.class);
       //get node to sort
       List<Node> originalList = new ArrayList<Node>();
-      if (listContent != null && listContent.length != 0) {
-        for (String itemPath : listContent) {
+      if (contentList != null && contentList.length != 0) {
+        for (String itemPath : contentList) {
           itemPath = itemPath.replace("{siteName}", Util.getPortalRequestContext().getSiteName());
           Node currentNode = NodeLocation.getNodeByExpression(itemPath);
           if(currentNode != null){
