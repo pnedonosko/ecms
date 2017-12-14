@@ -94,7 +94,10 @@ public class UICLVManualMode extends UICLVContainer {
 
     String strQuery = this.getAncestorOfType(UICLVPortlet.class).getQueryStatement(query);
     if (strQuery != null) strQuery = strQuery.replaceAll("\"", "'");
-    String[] contentList = portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null).split(";");
+    String[] contentList = null;
+    if (portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null) != null) {
+      contentList = portletPreferences.getValue(UICLVPortlet.PREFERENCE_ITEM_PATH, null).split(";");
+    }
     if (this.getAncestorOfType(UICLVPortlet.class).isQueryApplication()
         && UICLVPortlet.PREFERENCE_CONTEXTUAL_FOLDER_ENABLE.equals(contextualMode)
         && org.exoplatform.wcm.webui.Utils.checkQuery(workspace, strQuery, Query.SQL)) {
