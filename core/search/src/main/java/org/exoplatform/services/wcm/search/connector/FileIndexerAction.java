@@ -9,6 +9,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.ext.action.AdvancedAction;
 import org.exoplatform.services.jcr.impl.ext.action.AdvancedActionException;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.wcm.core.NodeLocation;
@@ -72,13 +73,16 @@ public class FileIndexerAction implements AdvancedAction {
             if (node.isNodeType(NodetypeConstant.NT_FILE)) {
               indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
             }
-            // reindex children nodes when permissions has been changed (exo:permissions) - it is required
-            // to update permissions of the nodes in the indexing engine
-            String propertyName = property.getName();
-            if (propertyName != null && propertyName.equals("exo:permissions")) {
-              applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()));
-            }
           }
+        }
+        break;
+      case ExtendedEvent.PERMISSION_CHANGED:
+        node = (NodeImpl)context.get(InvocationContext.CURRENT_ITEM);
+        if (node != null && !trashService.isInTrash(node)) {
+            indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
+          // reindex children nodes when permissions has been changed (exo:permissions) - it is required
+          // to update permissions of the nodes in the indexing engine
+          applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()));
         }
         break;
     }
