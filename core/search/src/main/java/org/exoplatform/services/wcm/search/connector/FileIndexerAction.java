@@ -48,16 +48,16 @@ public class FileIndexerAction implements AdvancedAction {
         node = (NodeImpl)context.get(InvocationContext.CURRENT_ITEM);
         if(node != null) {
           if (trashService.isInTrash(node)) {
-            applyIndexingOperationOnNodes(node, n -> indexingService.unindex(FileindexingConnector.TYPE, n.getInternalIdentifier()));
+            applyIndexingOperationOnNodes(node, n -> indexingService.unindex(FileindexingConnector.TYPE, n.getInternalIdentifier()), false);
           } else {
-            applyIndexingOperationOnNodes(node, n -> indexingService.index(FileindexingConnector.TYPE, n.getInternalIdentifier()));
+            applyIndexingOperationOnNodes(node, n -> indexingService.index(FileindexingConnector.TYPE, n.getInternalIdentifier()), false);
           }
         }
         break;
       case Event.NODE_REMOVED:
         node = (NodeImpl)context.get(InvocationContext.CURRENT_ITEM);
         if(node != null) {
-          applyIndexingOperationOnNodes(node, n -> indexingService.unindex(FileindexingConnector.TYPE, n.getInternalIdentifier()));
+          applyIndexingOperationOnNodes(node, n -> indexingService.unindex(FileindexingConnector.TYPE, n.getInternalIdentifier()), false);
         }
         break;
       case Event.PROPERTY_ADDED:
@@ -82,7 +82,7 @@ public class FileIndexerAction implements AdvancedAction {
             indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
           // reindex children nodes when permissions has been changed (exo:permissions) - it is required
           // to update permissions of the nodes in the indexing engine
-          applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()));
+          applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()), true);
         }
         break;
     }
@@ -104,7 +104,7 @@ public class FileIndexerAction implements AdvancedAction {
    * @param node The root node to operate on
    * @param indexingOperation Indexing operation (index|reindex|unindex) to apply on the nodes
    */
-  protected void applyIndexingOperationOnNodes(NodeImpl node, Consumer<NodeImpl> indexingOperation) {
+  protected void applyIndexingOperationOnNodes(NodeImpl node, Consumer<NodeImpl> indexingOperation, boolean isUpdatePermission) {
     if (node == null) {
       return;
     }
@@ -121,7 +121,11 @@ public class FileIndexerAction implements AdvancedAction {
       NodeIterator nodeIterator = node.getNodes();
       while(nodeIterator.hasNext()) {
         NodeImpl childNode = (NodeImpl) nodeIterator.nextNode();
-        applyIndexingOperationOnNodes(childNode, indexingOperation);
+        // skip the reindex loop on children nodes when the childnode is exo:privilegeable
+        if(isUpdatePermission && node.isNodeType(NodetypeConstant.EXO_PRIVILEGEABLE)){
+          continue;
+        }
+        applyIndexingOperationOnNodes(childNode, indexingOperation, isUpdatePermission);
       }
     } catch (RepositoryException e) {
       LOGGER.error("Cannot get child nodes of node " + node.getInternalIdentifier(), e);
