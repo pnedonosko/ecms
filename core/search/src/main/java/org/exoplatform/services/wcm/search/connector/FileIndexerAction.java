@@ -110,7 +110,7 @@ public class FileIndexerAction implements AdvancedAction {
     }
 
     try {
-      if (node.getPrimaryNodeType().getName().equals(NodetypeConstant.NT_FILE)) {
+      if (node.isNodeType(NodetypeConstant.NT_FILE)) {
         indexingOperation.accept(node);
       }
     } catch (RepositoryException e) {
