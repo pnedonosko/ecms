@@ -80,10 +80,10 @@ public class FileIndexerAction implements AdvancedAction {
       case ExtendedEvent.PERMISSION_CHANGED:
         node = (NodeImpl)context.get(InvocationContext.CURRENT_ITEM);
         if (node != null && !trashService.isInTrash(node)) {
-            indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
+          indexingService.reindex(FileindexingConnector.TYPE, node.getInternalIdentifier());
           // reindex children nodes when permissions has been changed (exo:permissions) - it is required
           // to update permissions of the nodes in the indexing engine
-          applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()), n -> privilegeableFilter(n));
+          applyIndexingOperationOnNodes(node, n -> indexingService.reindex(FileindexingConnector.TYPE, n.getInternalIdentifier()), n -> hasNotPrivilegeableMixin(n));
         }
         break;
     }
@@ -123,8 +123,7 @@ public class FileIndexerAction implements AdvancedAction {
       NodeIterator nodeIterator = node.getNodes();
       while(nodeIterator.hasNext()) {
         NodeImpl childNode = (NodeImpl) nodeIterator.nextNode();
-        // skip the reindex loop on children nodes when the child node is exo:privilegeable
-        if(filter.test(childNode))
+        if(! filter.test(childNode))
           continue;
         applyIndexingOperationOnNodes(childNode, indexingOperation, filter);
       }
@@ -132,13 +131,13 @@ public class FileIndexerAction implements AdvancedAction {
       LOGGER.error("Cannot get child nodes of node " + node.getInternalIdentifier(), e);
     }
   }
-
-  private boolean privilegeableFilter(NodeImpl node) {
+  // Check if the node has exo:privilegeable mixin
+  private boolean hasNotPrivilegeableMixin(NodeImpl node) {
     try {
-      return node.isNodeType(NodetypeConstant.EXO_PRIVILEGEABLE);
+      return ! node.isNodeType(NodetypeConstant.EXO_PRIVILEGEABLE);
     } catch (RepositoryException e) {
       LOGGER.error("Error while check privilegeable mixin ", e);
     }
-    return false;
+    return true;
   }
 }
