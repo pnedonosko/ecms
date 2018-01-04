@@ -137,7 +137,7 @@ public class FileIndexerAction implements AdvancedAction {
     try {
       return node.isNodeType(NodetypeConstant.EXO_PRIVILEGEABLE);
     } catch (RepositoryException e) {
-      LOGGER.error("Cannot get child nodes of node " + node.getInternalIdentifier(), e);
+      LOGGER.error("Error while check privilegeable mixin ", e);
     }
     return false;
   }
