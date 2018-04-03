@@ -36,6 +36,7 @@ import javax.portlet.PortletPreferences;
 import org.apache.commons.lang.StringUtils;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.commons.api.search.data.SearchResult;
+import org.exoplatform.commons.utils.CommonsUtils;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.ecm.jcr.model.Preference;
@@ -59,6 +60,8 @@ import org.exoplatform.services.cms.templates.TemplateService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.Group;
+import org.exoplatform.services.organization.GroupHandler;
 import org.exoplatform.services.organization.OrganizationService;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.security.ConversationState;
@@ -202,7 +205,30 @@ public class UITreeExplorer extends UIContainer {
                     repoService.getCurrentRepository()).getItem(path);
             return groupNode.getProperty(NodetypeConstant.EXO_LABEL).getString();
           } catch(Exception e) {
-            return id.replace(".", " / ");
+            try {
+              String groupsDriveName = "/"+ManageDriveServiceImpl.GROUPS_DRIVE_NAME;
+              if(path.startsWith(groupsDriveName)){
+                String[] ids = path.replaceFirst(groupsDriveName,"").split("/");
+                OrganizationService organizationService = CommonsUtils.getService(OrganizationService.class);
+                GroupHandler groupHandler = organizationService.getGroupHandler();
+                String label = "" ;
+                String groupId = "";
+                Group group;
+                for(String gdid : ids) {
+                  if(!gdid.equals("") && !gdid.equals("Documents")) {
+                    label += "/";
+                    groupId += " / " + gdid;
+                    group = groupHandler.findGroupById(groupId);
+                    label += group.getLabel();
+                  }
+                }
+                return label;
+              } else {
+                return id.replace(".", " / ");
+              }
+            } catch (Exception e1){
+              return id.replace(".", " / ");
+            }
           }
         }
       }
