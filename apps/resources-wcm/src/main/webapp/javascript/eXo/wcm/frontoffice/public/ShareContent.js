@@ -59,7 +59,8 @@
         var $popup = gj(element).closest(".UIPopupWindow");
         var top = parentTop - $popup[0].getClientRects()[0].top + 25;
         element.style.top = top + "px";
-        element.style.left = ($button[0].getClientRects()[0].left - $popup[0].getClientRects()[0].left) + 'px';
+        element.style.left = ($button[0].getClientRects()[0].left -
+                        $popup[0].getClientRects()[0].left - gj(element).outerWidth() + $button.outerWidth()) + 'px';
         element.style.display = "block";
       }
     });
