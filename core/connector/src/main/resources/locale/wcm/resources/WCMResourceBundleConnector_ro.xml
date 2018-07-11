@@ -16,16 +16,20 @@
   </RenameConnector>
   <OpenInOfficeConnector>
     <label>
-      <exo.remote-edit.word>Open in Word</exo.remote-edit.word>
-      <exo.remote-edit.excel>Open in Excel</exo.remote-edit.excel>
-      <exo.remote-edit.powerpoint>Open in Powerpoint</exo.remote-edit.powerpoint>
-      <exo.remote-edit.desktop>Open on Desktop</exo.remote-edit.desktop>
-      <exo.remote-edit.desktop-app>Open in {0}</exo.remote-edit.desktop-app>
+      <exo>
+        <remote-edit>
+          <word>Deschide în Word</word>
+          <excel>Deschide în Excel</excel>
+          <powerpoint>Deschide în Powerpoint</powerpoint>
+          <desktop>Deschide pe Desktop</desktop>
+          <desktop-app>Deschide în {0}</desktop-app>
+        </remote-edit>
+      </exo>
     </label>
   </OpenInOfficeConnector>
   <DocumentAutoVersion>
     <msg>
-      <WrongMimeType>The mimetype of the file uploaded is unknown. No new version of {0} will be created.</WrongMimeType>
+      <WrongMimeType>Mimetype-ul fișierului încărcat este necunoscut. Nicio versiune noua a {0} nu va fi creată.</WrongMimeType>
     </msg>
   </DocumentAutoVersion>
 </bundle>

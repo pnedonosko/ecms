@@ -300,7 +300,7 @@
       <ManageActions>Handlinger</ManageActions>
       <ExportNode>Eksporter</ExportNode>
       <ImportNode>Importer</ImportNode>
-      <OverloadThumbnail>Bytt miniatyrbilde</OverloadThumbnail>
+      <OverloadThumbnail>Change Icon Image</OverloadThumbnail>
       <ManageHidden>Vis/Skjul innhold</ManageHidden>
       <ViewReferences>Referanser</ViewReferences>
       <ViewNodeType>Typer</ViewNodeType>
@@ -1350,12 +1350,13 @@
       <empty>Click here to add a summary</empty>
     </summary>
     <tooltip>
+      <original>Original Version</original>
       <version>Version</version>
       <baseVersion>current version</baseVersion>
       <addLabel>Legge til etikett</addLabel>
       <removeLable>Fjern etikett</removeLable>
       <restoreVersion>Gjenopprett versjon</restoreVersion>
-      <viewVersion>Vis versjonsinfo</viewVersion>
+      <viewVersion>View Version</viewVersion>
       <deleteVersion>Slett versjon</deleteVersion>
       <compareVersion>Sammenligne med baseversjonen</compareVersion>
     </tooltip>

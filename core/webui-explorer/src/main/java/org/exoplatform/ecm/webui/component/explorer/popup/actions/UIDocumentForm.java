@@ -248,7 +248,7 @@ public class UIDocumentForm extends UIDialogForm implements UIPopupComponent, UI
     addScripts("uiDocumentForm.UIDocForm.UpdateGUI();").
     addScripts("uiDocumentForm.UIDocForm.AutoFocus();");
 
-    context.getJavascriptManager().loadScriptResource("wcm-webui-ext");
+    context.getJavascriptManager().loadScriptResource("wcm-webui-extension");
     context.getJavascriptManager().addCustomizedOnLoadScript("changeWarning();");
     super.processRender(context);
   }
@@ -356,7 +356,19 @@ public class UIDocumentForm extends UIDialogForm implements UIPopupComponent, UI
     boolean hasCategories = false;
     String categoriesPath = "";
     TaxonomyService taxonomyService = documentForm.getApplicationComponent(TaxonomyService.class);
-    if (documentForm.isAddNew()) {
+    
+    Boolean hasTitle = false;
+    for (int i = 0; i < inputs.size(); i++) {
+      UIFormInput input = (UIFormInput) inputs.get(i);
+      if ((input.getName() != null) && input.getName().equals("title")) {
+        if(input.getValue() != null) {
+          hasTitle = true;
+          break;
+        }
+      }
+    }
+    
+    if (documentForm.isAddNew() && hasTitle) {
       for (int i = 0; i < inputs.size(); i++) {
         UIFormInput input = (UIFormInput) inputs.get(i);
         if ((input.getName() != null) && input.getName().equals("name")) {

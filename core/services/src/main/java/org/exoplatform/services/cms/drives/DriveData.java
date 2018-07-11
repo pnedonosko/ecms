@@ -16,10 +16,7 @@
  */
 package org.exoplatform.services.cms.drives;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -242,8 +239,16 @@ public class DriveData implements Comparable<DriveData>, Serializable {
   }
 
   public String getResolvedHomePath() {
-    return homePath.replaceAll(Pattern.quote("${userId}"), parameters.get("userId"))
-            .replaceAll(Pattern.quote("${groupId}"), parameters.get("groupId"));
+    String resolvedHomePath = homePath;
+    if (parameters != null) {
+      if (parameters.containsKey("userId") && homePath.contains("${userId}")) {
+        resolvedHomePath = resolvedHomePath.replaceAll(Pattern.quote("${userId}"), parameters.get("userId"));
+      }
+      if (parameters.containsKey("groupId") && homePath.contains("${groupId}")) {
+        resolvedHomePath = resolvedHomePath.replaceAll(Pattern.quote("${groupId}"), parameters.get("groupId"));
+      }
+    }
+    return resolvedHomePath;
   }
 
   public int compareTo(DriveData arg) {
@@ -251,14 +256,28 @@ public class DriveData implements Comparable<DriveData>, Serializable {
   }
 
   @Override
-  public boolean equals(Object obj) {
-     if (obj == this) {
-        return true;
-     }
-     if (obj instanceof DriveData) {
-        DriveData that = (DriveData)obj;
-        return name.equals(that.name) ;
-     }
-     return false;
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    DriveData driveData = (DriveData) o;
+    return viewPreferences == driveData.viewPreferences &&
+            viewNonDocument == driveData.viewNonDocument &&
+            viewSideBar == driveData.viewSideBar &&
+            showHiddenNode == driveData.showHiddenNode &&
+            Objects.equals(name, driveData.name) &&
+            Objects.equals(workspace, driveData.workspace) &&
+            Objects.equals(permissions, driveData.permissions) &&
+            Objects.equals(homePath, driveData.homePath) &&
+            Objects.equals(icon, driveData.icon) &&
+            Objects.equals(views, driveData.views) &&
+            Objects.equals(allowCreateFolders, driveData.allowCreateFolders) &&
+            Objects.equals(allowNodeTypesOnTree, driveData.allowNodeTypesOnTree) &&
+            Objects.equals(parameters, driveData.parameters);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, workspace, permissions, homePath, icon, views, viewPreferences,
+            viewNonDocument, viewSideBar, showHiddenNode, allowCreateFolders, allowNodeTypesOnTree, parameters);
   }
 }

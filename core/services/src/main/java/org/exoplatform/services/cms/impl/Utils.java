@@ -699,6 +699,23 @@ public class Utils {
     }
     return ret.toString();
   }
+
+  /** Return name after cleaning
+   * @param fileName file name
+   * @return cleaned name
+   */
+  public static String cleanNameWithAccents(String fileName) {
+    Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
+    if (fileName.indexOf('.') > 0) {
+      String ext = fileName.substring(fileName.lastIndexOf('.'));
+      fileName = accentsconverter.transliterate(fileName.substring(0, fileName.lastIndexOf('.'))).concat(ext);
+    } else {
+      fileName = accentsconverter.transliterate(fileName);
+    }
+    return Text.escapeIllegalJcrChars(fileName);
+
+  }
+
   public static List<String> getMemberships() throws Exception {
     List<String> userMemberships = new ArrayList<String>();
     String userId = ConversationState.getCurrent().getIdentity().getUserId();
@@ -855,6 +872,17 @@ public class Utils {
     }
     return lastModified;
   }
+
+  /**
+   *
+   * get jcr:baseVersion of a node
+   * @param node
+   * @return jcr:baseVersion of a node
+   * @throws Exception
+   */
+  public static String getJcrContentBaseVersion(Node node) throws Exception {
+    return node.hasProperty("jcr:baseVersion")? node.getProperty("jcr:baseVersion").getString() : null;
+  }
   
   
   public static Calendar getDate(Node node) throws Exception {
@@ -879,7 +907,7 @@ public class Utils {
     if (node == null || !node.isNodeType("nt:file")) {
       return "";
     }
-    StringBuffer ret = new StringBuffer();
+    StringBuilder ret = new StringBuilder();
     ret.append(" - ");
     long size = 0;
     try {
@@ -887,6 +915,14 @@ public class Utils {
     } catch (Exception e) {
       LOG.error("Can not get file size", e);
     }
+
+    ret.append(formatSize(size));
+
+    return ret.toString();
+  }
+
+  public static String formatSize(long size) {
+    StringBuilder ret = new StringBuilder();
     long byteSize = size % KB;
     long kbSize = (size % MB) / KB;
     long mbSize = (size % GB) / MB;
@@ -901,6 +937,7 @@ public class Utils {
     } else {
       ret.append("1 KB");
     }
+
     return ret.toString();
   }
 

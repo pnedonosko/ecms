@@ -17,7 +17,9 @@
 package org.exoplatform.services.ecm.dms.folksonomy;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -25,11 +27,14 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
+import org.exoplatform.services.cms.documents.TrashService;
 import org.exoplatform.services.cms.folksonomy.NewFolksonomyService;
 import org.exoplatform.services.cms.link.LinkManager;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.distribution.DataDistributionType;
 import org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.wcm.BaseWCMTestCase;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 
@@ -50,6 +55,7 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
   private NewFolksonomyService newFolksonomyService_;
   private LinkManager linkManager;
   private NodeHierarchyCreator      nodeHierarchyCreator;
+  private TrashService      trashService;
   private Node test, test2;
   private Node folksonomyNode;
   private Node groupAFolksonomyNode;
@@ -61,12 +67,13 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
   public void setUp() throws Exception {
     super.setUp();
     newFolksonomyService_ = (NewFolksonomyService) container.getComponentInstanceOfType(NewFolksonomyService.class);
+    trashService = (TrashService) container.getComponentInstanceOfType(TrashService.class);
     this.nodeHierarchyCreator = WCMCoreUtils.getService(NodeHierarchyCreator.class);
     linkManager = (LinkManager) container.getComponentInstanceOfType(LinkManager.class);
     applyUserSession("john", "gtn", COLLABORATION_WS);
 //    String userName = session.getUserID();
-    String userName = session.getUserID();
     Node root = session.getRootNode();
+    root.addNode("Trash");
     Node applicationData = root.hasNode("Application Data") ?
                            root.getNode("Application Data") :
                            root.addNode("Application Data");
@@ -117,7 +124,7 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
                     root.addNode("SiteTags");
     siteFolksonomyNode = siteTags.addNode(site);
     session.save();
-    
+    ConversationState.setCurrent(new ConversationState(new Identity("john")));
   }
 
   /**
@@ -340,6 +347,174 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
 
     assertEquals("testAddSiteTag failed! ", 1L, sportTagNode.getProperty(EXO_TOTAL).getLong());
     assertEquals("testAddSiteTag failed! ", 1L, weatherTagNode.getProperty(EXO_TOTAL).getLong());
+  }
+
+  public void testGetAllDocumentsByOneTagAndPath() throws Exception {
+    String[] twoTags = { "sport", "weather" };
+    String[] seaTag = { "sea" };
+    String user = session.getUserID();
+
+    newFolksonomyService_.addPrivateTag(twoTags, test, COLLABORATION_WS, user);
+    newFolksonomyService_.addPrivateTag(twoTags, test2, COLLABORATION_WS, user);
+    Node test3 = session.getRootNode().addNode("test3");
+    newFolksonomyService_.addPrivateTag(seaTag, test3, COLLABORATION_WS, user);
+
+    Node seaTagNode = dataDistributionType.getDataNode(folksonomyNode, "sea");
+    Node weatherTagNode = dataDistributionType.getDataNode(folksonomyNode, "weather");
+
+    assertNotNull("'sea' tag node is null", seaTagNode);
+    assertNotNull("'weather' tag node is null", weatherTagNode);
+
+    String seaTagPath = seaTagNode.getPath();
+    String weatherTagPath = weatherTagNode.getPath();
+
+    Set<String> tagPaths = new HashSet<>();
+    tagPaths.add(seaTagPath);
+    List<Node> docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test3.isSame(node));
+    }
+    assertEquals("Documents count linked to tag 'sea' is wrong", 1, docs.size());
+
+    tagPaths.clear();
+    tagPaths.add(weatherTagPath);
+
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test.isSame(node) || test2.isSame(node));
+    }
+    assertEquals("Documents count linked to tag 'weather' is wrong", 2, docs.size());
+  }
+
+  public void testGetAllDocumentsByTwoTagsAndPath() throws Exception {
+    String[] twoTags = { "sport", "weather" };
+    String[] seaTag = { "sea", "sport" };
+
+    String user = session.getUserID();
+
+    newFolksonomyService_.addPrivateTag(twoTags, test, COLLABORATION_WS, user);
+    newFolksonomyService_.addPrivateTag(twoTags, test2, COLLABORATION_WS, user);
+    Node test3 = session.getRootNode().addNode("test3");
+    newFolksonomyService_.addPrivateTag(seaTag, test3, COLLABORATION_WS, user);
+
+    Node seaTagNode = dataDistributionType.getDataNode(folksonomyNode, "sea");
+    Node sportTagNode = dataDistributionType.getDataNode(folksonomyNode, "sport");
+    Node weatherTagNode = dataDistributionType.getDataNode(folksonomyNode, "weather");
+
+    assertNotNull("'sea' tag node is empty ", seaTagNode);
+    assertNotNull("'sport' tag node is empty ", sportTagNode);
+    assertNotNull("'weather' tag node is empty", weatherTagNode);
+
+    String seaTagPath = seaTagNode.getPath();
+    String weatherTagPath = weatherTagNode.getPath();
+    String sportTagPath = sportTagNode.getPath();
+
+    SessionProvider sessionProvider = WCMCoreUtils.getSystemSessionProvider();
+    Set<String> tagPaths = new HashSet<>();
+    tagPaths.add(sportTagPath);
+    tagPaths.add(weatherTagPath);
+
+    List<Node> docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test.isSame(node) || test2.isSame(node));
+    }
+    assertEquals("Returned documents count by method getAllDocumentsByTagsAndPath is wrong", 2, docs.size());
+
+    tagPaths.clear();
+    tagPaths.add(sportTagPath);
+    tagPaths.add(seaTagPath);
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test3.isSame(node));
+    }
+    assertEquals("Returned documents count by method getAllDocumentsByTagsAndPath is wrong ", 1, docs.size());
+
+    tagPaths.clear();
+    tagPaths.add(seaTagPath);
+    tagPaths.add(weatherTagPath);
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test3.isSame(node));
+    }
+    assertEquals("Returned documents count by method getAllDocumentsByTagsAndPath is wrong ", 0, docs.size());
+  }
+
+  public void testGetAllDocumentsByTagsAndDifferentPaths() throws Exception {
+    String[] twoTags = { "sport", "weather" };
+
+    String user = session.getUserID();
+
+    newFolksonomyService_.addPrivateTag(twoTags, test, COLLABORATION_WS, user);
+    newFolksonomyService_.addPrivateTag(twoTags, test2, COLLABORATION_WS, user);
+
+    Node test3 = session.getRootNode().addNode("test3");
+    newFolksonomyService_.addPrivateTag(twoTags, test3, COLLABORATION_WS, user);
+
+    Node sportTagNode = dataDistributionType.getDataNode(folksonomyNode, "sport");
+    Node weatherTagNode = dataDistributionType.getDataNode(folksonomyNode, "weather");
+
+    assertNotNull("'sport' tag node is empty ", sportTagNode);
+    assertNotNull("'weather' tag node is empty", weatherTagNode);
+
+    String weatherTagPath = weatherTagNode.getPath();
+    String sportTagPath = sportTagNode.getPath();
+
+    SessionProvider sessionProvider = WCMCoreUtils.getSystemSessionProvider();
+    Set<String> tagPaths = new HashSet<>();
+    tagPaths.add(sportTagPath);
+    tagPaths.add(weatherTagPath);
+
+    List<Node> docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test.isSame(node) || test2.isSame(node) || test3.isSame(node));
+    }
+    assertEquals("Returned documents count by method getAllDocumentsByTagsAndPath is wrong", 3, docs.size());
+
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/Users", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test.isSame(node) || test2.isSame(node));
+    }
+    assertEquals("Returned documents count by method getAllDocumentsByTagsAndPath is wrong ", 2, docs.size());
+
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/Users/notexistingpath",
+                                                              tagPaths,
+                                                              COLLABORATION_WS,
+                                                              sessionProvider);
+    assertEquals("No document should be returned by using a non existing path parameter", 0, docs.size());
+  }
+
+  public void testGetAllDocumentsByTagsAndPathWithThreeTags() throws Exception {
+    String[] twoTags = { "sport", "weather" };
+    String[] twoOtherTags = { "sport", "sea" };
+    String user = session.getUserID();
+
+    newFolksonomyService_.addPrivateTag(twoTags, test, COLLABORATION_WS, user);
+    newFolksonomyService_.addPrivateTag(twoTags, test2, COLLABORATION_WS, user);
+    Node test3 = session.getRootNode().addNode("test3");
+    newFolksonomyService_.addPrivateTag(twoOtherTags, test3, COLLABORATION_WS, user);
+
+    Node weatherTagNode = dataDistributionType.getDataNode(folksonomyNode, "weather");
+    Node seaTagNode = dataDistributionType.getDataNode(folksonomyNode, "sea");
+
+    assertNotNull("'sea' tag node is null", seaTagNode);
+    assertNotNull("'weather' tag node is null", weatherTagNode);
+
+    String seaTagPath = seaTagNode.getPath();
+    String weatherTagPath = weatherTagNode.getPath();
+
+    Set<String> tagPaths = new HashSet<>();
+    tagPaths.add(seaTagPath);
+
+    List<Node> docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    for (Node node : docs) {
+      assertTrue(test3.isSame(node));
+    }
+    assertEquals("No document is linked to tag 'sea'", 1, docs.size());
+
+    // Test with tags 'sea' and 'weather'
+    tagPaths.add(weatherTagPath);
+    docs = newFolksonomyService_.getAllDocumentsByTagsAndPath("/", tagPaths, COLLABORATION_WS, sessionProvider);
+    assertEquals("No document should be linked to tags 'sea' and 'weather' at the same time", 0, docs.size());
   }
 
   /**
@@ -586,6 +761,48 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
 
     assertTrue("testModifyTagName failed! ", test.isSame(
         linkManager.getTarget(football.getNodes().nextNode())));
+  }
+
+  /**
+   * Test Method : removeTag()
+   * Input: Node 'test',
+   * Test action: add 1 tag 'sport' in public and move node 'test' to trash
+   * Expected Result: tag deleted
+   */
+  public void testRemoveEmptyTag() throws Exception {
+    String[] tags = { "sport"};
+    String publicFolksonomyTreePath = "/Application Data/Tags";
+    newFolksonomyService_.addPublicTag(publicFolksonomyTreePath,
+                                       tags,
+                                       test,
+                                       COLLABORATION_WS);
+    //-------------------------get sportTagNode-------------------------------
+    Node sportTagNode = null;
+    try {
+      sportTagNode = dataDistributionType.getDataNode(publicFolksonomyNode, "sport");
+    } catch (PathNotFoundException e) {
+      sportTagNode = null;
+    }
+    //------------------------------------------------------------------------
+
+    //-------------------------remove test node-------------------------------
+    trashService.moveToTrash(test, sessionProvider);
+    //------------------------------------------------------------------------
+
+    newFolksonomyService_.removeTag(sportTagNode.getPath(), COLLABORATION_WS);
+
+    //-------------------------get sportTagNode-------------------------------
+    sportTagNode = null;
+    try {
+      sportTagNode = dataDistributionType.getDataNode(publicFolksonomyNode, "sport");
+    } catch (PathNotFoundException e) {
+      sportTagNode = null;
+    }
+    //------------------------------------------------------------------------
+    assertNull("testRemoveTag failed! ", sportTagNode);
+
+    List<Node> tagList = newFolksonomyService_.getAllPublicTags(publicFolksonomyTreePath, COLLABORATION_WS);
+    assertEquals("testRemoveTag failed! ", 0, tagList.size());
   }
 
   /**
@@ -979,19 +1196,20 @@ public class TestNewFolksonomyService extends BaseWCMTestCase {
     Node userNode = nodeHierarchyCreator.getUserNode(sessionProvider, "john");
     String[] nodes = {"/Application Data/Tags",
                       "/Groups/platform/users/ApplicationData/Tags",
-                      "/Groups/platform/guests/ApplicationData/Tags", "/SiteTags",
-                      "/test","/test2", userNode.getNode("Private/" + TEST).getPath(), userNode.getNode("Private/" + TEST2).getPath(),
+                      "/Groups/platform/guests/ApplicationData/Tags", "/SiteTags", "/Trash",
+                      "/test","/test2", userNode.getPath() + "/Private/" + TEST, userNode.getPath() + "/Private/" + TEST2,
                       userNode.getNode("Private/Folksonomy").getPath(),
                       session.getUserID()};
+    Session systemSession = sessionProviderService_.getSystemSessionProvider(null).getSession(COLLABORATION_WS, repository);
     for (String node : nodes)
-      if (session.itemExists(node)) {
+      if (systemSession.itemExists(node)) {
         //System.out.println("Delete: -----------------------------" + node);
-        Node n = (Node)session.getItem(node);
+        Node n = (Node)systemSession.getItem(node);
         n.remove();
-        session.save();
+        systemSession.save();
       }
 
-    Session dmsSession = sessionProvider.getSession(DMSSYSTEM_WS, repository);
+    Session dmsSession = sessionProviderService_.getSystemSessionProvider(null).getSession(DMSSYSTEM_WS, repository);
     String tagStylesPath = "/jcr:system/exo:ecm/exo:folksonomies/exo:tagStyle";
     if (dmsSession.itemExists(tagStylesPath)) {
       Node tagStylesNode = (Node)dmsSession.getItem(tagStylesPath);

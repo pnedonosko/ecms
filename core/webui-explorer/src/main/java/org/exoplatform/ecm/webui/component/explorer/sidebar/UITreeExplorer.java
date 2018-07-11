@@ -33,7 +33,9 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.query.Row;
 import javax.portlet.PortletPreferences;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.ws.commons.util.Base64;
+import org.exoplatform.commons.api.search.data.SearchResult;
 import org.exoplatform.commons.utils.PageList;
 import org.exoplatform.container.xml.PortalContainerInfo;
 import org.exoplatform.ecm.jcr.model.Preference;
@@ -44,10 +46,12 @@ import org.exoplatform.ecm.webui.component.explorer.UIDrivesArea;
 import org.exoplatform.ecm.webui.component.explorer.UIJCRExplorer;
 import org.exoplatform.ecm.webui.component.explorer.UIJCRExplorerPortlet;
 import org.exoplatform.ecm.webui.component.explorer.UIWorkingArea;
+import org.exoplatform.ecm.webui.component.explorer.UIDocumentInfo;
 import org.exoplatform.ecm.webui.utils.JCRExceptionManager;
 import org.exoplatform.services.cms.clipboard.ClipboardService;
 import org.exoplatform.services.cms.documents.AutoVersionService;
 import org.exoplatform.services.cms.drives.DriveData;
+import org.exoplatform.services.cms.drives.impl.ManageDriveServiceImpl;
 import org.exoplatform.services.cms.impl.Utils;
 import org.exoplatform.services.cms.link.LinkManager;
 import org.exoplatform.services.cms.link.LinkUtils;
@@ -56,6 +60,8 @@ import org.exoplatform.services.cms.templates.TemplateService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.User;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.wcm.core.NodetypeConstant;
 import org.exoplatform.services.wcm.search.base.SearchDataCreator;
@@ -69,6 +75,7 @@ import org.exoplatform.webui.core.UIApplication;
 import org.exoplatform.webui.core.UIComponent;
 import org.exoplatform.webui.core.UIContainer;
 import org.exoplatform.webui.core.UIRightClickPopupMenu;
+import org.exoplatform.webui.core.UIPageIterator;
 import org.exoplatform.webui.event.Event;
 import org.exoplatform.webui.event.EventListener;
 import org.exoplatform.services.wcm.search.base.LazyPageList;
@@ -93,7 +100,7 @@ public class UITreeExplorer extends UIContainer {
   private class TreeNodeDataCreater implements SearchDataCreator<TreeNode>{
 
     @Override
-    public TreeNode createData(Node node, Row row){
+    public TreeNode createData(Node node, Row row, SearchResult searchResult){
       try {
         return new TreeNode(node);
       } catch (RepositoryException e) {
@@ -118,6 +125,10 @@ public class UITreeExplorer extends UIContainer {
 
   UIWorkingArea getWorkingArea() {
     return getAncestorOfType(UIWorkingArea.class);
+  }
+
+  private UISideBar getSideBar() {
+    return getWorkingArea().findFirstComponentOfType(UISideBar.class);
   }
 
   UIComponent getCustomAction() throws Exception {
@@ -159,19 +170,48 @@ public class UITreeExplorer extends UIContainer {
     DriveData driveData = getAncestorOfType(UIJCRExplorer.class).getDriveData();
     String id = driveData.getName();
     String path = driveData.getHomePath();
+
+    String driveLabelKey = "Drives.label." + id.replace(".", "").replace(" ", "");
     try {
-      return res.getString("Drives.label." + id.replace(".", "").replace(" ", ""));
-    } catch (MissingResourceException ex) {
-      try {
-        RepositoryService repoService = WCMCoreUtils.getService(RepositoryService.class);
-        Node groupNode = (Node)WCMCoreUtils.getSystemSessionProvider().getSession(
-                                                                                  repoService.getCurrentRepository().getConfiguration().getDefaultWorkspaceName(),
-                                                                                  repoService.getCurrentRepository()).getItem(path);
-        return groupNode.getProperty(NodetypeConstant.EXO_LABEL).getString();
-      } catch(Exception e) {
-        return id.replace(".", " / ");
+      if (ManageDriveServiceImpl.USER_DRIVE_NAME.equals(id)) {
+        // User Documents drive
+        driveLabelKey = "Drives.label.UserDocuments";
+        String userDisplayName = "";
+
+        String userIdPath = driveData.getParameters().get(ManageDriveServiceImpl.DRIVE_PARAMATER_USER_ID);
+        String userId = userIdPath != null ? userIdPath.substring(userIdPath.lastIndexOf("/") + 1) : null;
+        if (StringUtils.isNotEmpty(userId)) {
+          userDisplayName = userId;
+          User user = this.getApplicationComponent(OrganizationService.class).getUserHandler().findUserByName(userId);
+          if (user != null) {
+            userDisplayName = user.getDisplayName();
+          }
+        }
+        try {
+          return res.getString(driveLabelKey).replace("{0}", userDisplayName);
+        } catch (MissingResourceException mre) {
+          LOG.error("Cannot get resource string for " + driveLabelKey);
+        }
+
+      } else {
+        try {
+          return res.getString(driveLabelKey);
+        } catch (MissingResourceException ex) {
+          try {
+            RepositoryService repoService = WCMCoreUtils.getService(RepositoryService.class);
+            Node groupNode = (Node)WCMCoreUtils.getSystemSessionProvider().getSession(
+                    repoService.getCurrentRepository().getConfiguration().getDefaultWorkspaceName(),
+                    repoService.getCurrentRepository()).getItem(path);
+            return groupNode.getProperty(NodetypeConstant.EXO_LABEL).getString();
+          } catch(Exception e) {
+            return id.replace(".", " / ");
+          }
+        }
       }
+    } catch (Exception ex) {
+      LOG.warn("Can not find resource string for " + driveLabelKey, ex);
     }
+    return id.replace(".", " / ");
   }
 
   public boolean isAllowNodeTypesOnTree(Node node) throws RepositoryException {
@@ -213,6 +253,11 @@ public class UITreeExplorer extends UIContainer {
       UITreeNodePageIterator pageIterator = findComponentById(treeNode.getPath());
       return pageIterator.getCurrentPageData();
     }
+    if(isShowChildren(treeNode) && treeNode.getChildrenSize() > 0 && treeNode.getChildren().size() == 0) {
+      UIJCRExplorer jcrExplorer = getAncestorOfType(UIJCRExplorer.class);
+      treeNode.setChildren(jcrExplorer.getChildrenList(treeNode.getPath(), false));
+      return treeNode.getChildren();
+    }
     return treeNode.getChildren();
   }
 
@@ -253,10 +298,10 @@ public class UITreeExplorer extends UIContainer {
     return prefixWebDAV ;
   }
   
-  public boolean isShowChildren(String path){
+  public boolean isShowChildren(TreeNode treeNode){
     UIJCRExplorer jcrExplorer = getAncestorOfType(UIJCRExplorer.class);
     String currentPath = jcrExplorer.getCurrentPath();
-    return currentPath.startsWith(path);
+    return treeNode.isExpanded() || currentPath.startsWith(treeNode.getPath());
   }
 
   public String getRepository() {
@@ -316,6 +361,9 @@ public class UITreeExplorer extends UIContainer {
   }
 
   private void buildTree(String path) throws Exception {
+    if(getSideBar() == null || !getSideBar().isRenderComponent("Explorer")) {
+      return;
+    }
     UIJCRExplorer jcrExplorer = getAncestorOfType(UIJCRExplorer.class);
     int nodePerPages = jcrExplorer.getPreference().getNodesPerPage();
     TreeNode treeRoot = new TreeNode(getRootNode());
@@ -441,6 +489,10 @@ public class UITreeExplorer extends UIContainer {
       //      UIDocumentContainer uiDocumentContainer = uiDocumentWorkspace.getChild(UIDocumentContainer.class);
       //      UIDocumentInfo uiDocumentInfo = uiDocumentContainer.getChildById("UIDocumentInfo") ;
 
+      UIPageIterator contentPageIterator = uiExplorer.findComponentById(UIDocumentInfo.CONTENT_PAGE_ITERATOR_ID);
+      if(contentPageIterator != null) {
+        contentPageIterator.setCurrentPage(1);
+      }
       uiExplorer.updateAjax(event);
       event.getRequestContext().getJavascriptManager().
       require("SHARED/multiUpload", "multiUpload").

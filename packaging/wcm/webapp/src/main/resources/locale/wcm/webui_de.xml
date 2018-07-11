@@ -38,6 +38,8 @@
       <SharedSite>Gemeinsame Webseite</SharedSite>
       <PersonalDocuments>Personenbezogene Unterlagen</PersonalDocuments>
       <UserDocuments>{0} Dokumente</UserDocuments>
+      <Collaboration>Zusammenarbeit</Collaboration>
+      <Trash>Papierkorb</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Spaltenkonfigurationen für Seite</ColumnPageConfigs>
       <RowPageConfigs>Zeilenkonfigurationen für Seite</RowPageConfigs>
       <TabsPageConfigs>Reiterkonfigurationen für Seite</TabsPageConfigs>
-      <MixPageConfigs>Mixed</MixPageConfigs>
+      <MixPageConfigs>Gemischte Seitenkonfigurationen</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -448,7 +450,7 @@
 
   <UIViewMetadataForm>
     <msg>
-      <Invalid-number>Please enter a valid number.</Invalid-number>
+      <Invalid-number>Bitte geben Sie eine gültige Zahl ein.</Invalid-number>
     </msg>
   </UIViewMetadataForm>
 </bundle>

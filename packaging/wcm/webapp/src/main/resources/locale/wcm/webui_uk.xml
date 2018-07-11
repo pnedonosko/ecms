@@ -38,6 +38,8 @@
       <SharedSite>Сайт спільного користування</SharedSite>
       <PersonalDocuments>Особисті Документи</PersonalDocuments>
       <UserDocuments>{0} Документи</UserDocuments>
+      <Collaboration>Співпраця</Collaboration>
+      <Trash>Кошик</Trash>
     </label>
   </Drives>
 
@@ -357,7 +359,7 @@
       <ColumnPageConfigs>Конфігурація стовпчиків</ColumnPageConfigs>
       <RowPageConfigs>Конфігурація рядків</RowPageConfigs>
       <TabsPageConfigs>Конфігурація вкладок</TabsPageConfigs>
-      <MixPageConfigs>Mixed</MixPageConfigs>
+      <MixPageConfigs>Змішані</MixPageConfigs>
     </item>
   </UIDropDownPageTemp>
 
@@ -448,7 +450,7 @@
 
   <UIViewMetadataForm>
     <msg>
-      <Invalid-number>Please enter a valid number.</Invalid-number>
+      <Invalid-number>Будь ласка, введіть правильне число.</Invalid-number>
     </msg>
   </UIViewMetadataForm>
 </bundle>

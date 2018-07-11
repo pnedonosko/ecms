@@ -2,6 +2,7 @@ package org.exoplatform.wcm.connector.collaboration;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.tika.io.IOUtils;
+import org.exoplatform.ecm.utils.text.Text;
 import org.exoplatform.services.cms.documents.DocumentTypeService;
 import org.exoplatform.services.cms.documents.impl.DocumentType;
 import org.exoplatform.services.cms.link.LinkManager;
@@ -17,6 +18,7 @@ import org.picocontainer.Startable;
 
 import javax.annotation.security.RolesAllowed;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.servlet.http.HttpServletRequest;
@@ -79,10 +81,13 @@ public class OpenInOfficeConnector implements ResourceContainer, Startable {
           @QueryParam("lang") String language) throws Exception {
 
     //find from cached
-    objId = URLDecoder.decode(objId, "UTF-8");
-    String[] nodeInfo = objId.split(":");
-    String workspace = nodeInfo[0];
-    String filePath = nodeInfo[1];
+    int indexColon = objId.indexOf(":/");
+    if(indexColon < 0) {
+      return Response.status(Response.Status.BAD_REQUEST)
+              .entity("The objId param must start by the workspace name, followed by ':' and the node path").build();
+    }
+    String workspace = objId.substring(0, indexColon);
+    String filePath = objId.substring(indexColon + 1);
 
     String extension = filePath.substring(filePath.lastIndexOf(".") + 1, filePath.length());
     if(extension.contains("[")) extension=extension.substring(0, extension.indexOf("["));
@@ -119,7 +124,11 @@ public class OpenInOfficeConnector implements ResourceContainer, Startable {
     String nodePath = filePath;
     boolean isFile=false;
     try{
-      node = (Node)nodeFinder.getItem(workspace, filePath);
+      try {
+        node = (Node)nodeFinder.getItem(workspace, filePath);
+      } catch (PathNotFoundException e) {
+        node = (Node)nodeFinder.getItem(workspace, Text.unescapeIllegalJcrChars(filePath));
+      }
       if (linkManager.isLink(node)) node = linkManager.getTarget(node);
       nodePath = node.getPath();
       isFile = node.isNodeType(NodetypeConstant.NT_FILE);

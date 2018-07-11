@@ -300,7 +300,7 @@
       <ManageActions>Accions</ManageActions>
       <ExportNode>Exporta</ExportNode>
       <ImportNode>Importa</ImportNode>
-      <OverloadThumbnail>Sobrecàrrega la miniatura</OverloadThumbnail>
+      <OverloadThumbnail>Personalitza l'icone</OverloadThumbnail>
       <ManageHidden>Mostra/Amaga el contingut</ManageHidden>
       <ViewReferences>Referències</ViewReferences>
       <ViewNodeType>Tipus</ViewNodeType>
@@ -308,8 +308,8 @@
       <ViewProperties>Propietats</ViewProperties>
       <ViewMetadatas>Metadades</ViewMetadatas>
       <ViewRelations>Mostra/Amaga les relacions</ViewRelations>
-      <ShowJCRStructure>Mostra/Amaga l'Estructuració de Continguts</ShowJCRStructure>
-      <EditProperty>Edita les propietats del document</EditProperty>
+      <ShowJCRStructure>Mostra/Amaga estructura</ShowJCRStructure>
+      <EditProperty>Propietats del document</EditProperty>
       <UploadNewVersion>Puja una versió nova</UploadNewVersion>
     </tooltip>
     <msg>
@@ -599,7 +599,7 @@
       <WebDavView>Obre-ho a MS Office</WebDavView>
       <Download>Descarrega</Download>
       <OpenDocument>Edició remota</OpenDocument>
-      <EditProperty>Edita les propietats del document</EditProperty>
+      <EditProperty>Propietats del document</EditProperty>
       <UploadNewVersion>Puja una versió nova</UploadNewVersion>
       <CreateNewVersion>Desa com a nova versió</CreateNewVersion>
     </event>
@@ -1350,12 +1350,13 @@
       <empty>Feu clic aquí per afegir un resum</empty>
     </summary>
     <tooltip>
+      <original>Original Version</original>
       <version>Versió</version>
       <baseVersion>versió actual</baseVersion>
       <addLabel>Afegeix una etiqueta</addLabel>
       <removeLable>Elimina l'Etiqueta</removeLable>
       <restoreVersion>Restaurar aquesta Versió</restoreVersion>
-      <viewVersion>Veure informació de la versió</viewVersion>
+      <viewVersion>Veure la versió</viewVersion>
       <deleteVersion>Suprimeix aquesta versió</deleteVersion>
       <compareVersion>Compara amb la versió de base</compareVersion>
     </tooltip>

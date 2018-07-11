@@ -12,11 +12,21 @@
 		<link type="text/css" rel="stylesheet" href="../../../eXoSkin/skin/css/Core.css"/>
 		<link type="text/css" rel="stylesheet" href="../../../eXoSkin/skin/css/ecms/skin/ecms-resources-wcmskin.css"/>
 		<link type="text/css" rel="stylesheet" href="../../../eXoSkin/skin/css/ecms/portlets/explorer/ecms-explorer.css"/>
-		<script type="text/javascript" src="../../../eXoResources/javascript/jquery-1.7.1.js"></script>
+		<script type="text/javascript" src="../../../eXoResources/javascript/jquery-3.2.1.js"></script>
 		<script type="text/javascript" src="../../../eXoResources/javascript/eXo/core/require.js"></script>
 		<script type="text/javascript" src="../../../eXoResources/skin/bootstrap/js/bootstrap-tooltip.js"></script>
 		<script type="text/javascript" src="../../../eXoResources/javascript/eXo.js"></script>
 		<script type="text/javascript">
+                       function getParameterByName(name, url) {
+                             if (!url) url = window.location.href;
+                                name = name.replace(/[\[\]]/g, "\\$&");
+                                var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                                results = regex.exec(url);
+                                if (!results) return null;
+                                if (!results[2]) return '';
+                                return decodeURIComponent(results[2].replace(/\+/g, " "));
+                       }
+
 			var CKEDITOR = window.opener.CKEDITOR || {};
 			require(["../../../eXoResources/javascript/eXo/core/Base.js"], function(base) {
 				window.base = base; require(["../../../eXoResources/javascript/eXo/webui/UIPopup.js"], function(uiPopup) {
@@ -83,10 +93,18 @@
 
                                         gj("#viewTypeAreaID").html(strView);
                                         gj("#viewPresentAreaID").html(strViewPresent);
-
-                                        eXo.ecm.ECS.initRequestXmlTree('editor');
-                                        eXo.ecm.ECS.languageInit();
-									});
+                                        var nodePath = getParameterByName('nodePath', document.URL);
+                                        var insertContentType = getParameterByName('insertContentType', document.URL);
+                                        var subPath = getParameterByName('subPath', document.URL);
+                                        var ECS = eXo.ecm.ECS;
+                                        var rememberedLocation = localStorage.getItem(ECS.rememberedLocation);
+                                        var rememberedDriveName = localStorage.getItem(ECS.rememberedDriveName);
+                                        if (rememberedLocation && rememberedDriveName) {
+                                           ECS.initRequestXmlTree ('editor', rememberedDriveName, '/'+rememberedLocation+'/', 'uiHomeContentSelector');
+                                        } else {
+                                           ECS.buildECSTreeAccordingOfNodePath(nodePath, insertContentType, subPath);										          
+                                        }
+                                                                      });
                                                                        
 								});
 							});
@@ -101,7 +119,7 @@
 		<script type="text/javascript" src="js/UploadForm.js"></script>
 </head>
 <body >
-	<div class="uiHomePagePortlet uiHomeContentSelector">
+	<div class="uiHomePagePortlet uiHomeContentSelector" id="uiHomeContentSelector">
 		<div class="UIHomePageDT uiBox" >
 
 			<h6 class="title TitleBar">Content Selector</h6>

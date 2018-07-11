@@ -2426,15 +2426,12 @@
   <UITaxonomyTreeMainForm>
     <action>
       <NextViewPermission>Następny</NextViewPermission>
-      <Reset>Reset</Reset>
     </action>
   </UITaxonomyTreeMainForm>
 
   <UIPermissionTreeForm>
     <action>
-      <Save>Save</Save>
       <Cancel>#{word.cancel}</Cancel>
-      <Reset>Reset</Reset>
       <NextAddAction>Następny</NextAddAction>
       <Previous>Poprzedni</Previous>
     </action>
@@ -2485,7 +2482,7 @@
       <Add>Dodaj</Add>
     </action>
     <label>
-      <userOrGroup>Memberships:</userOrGroup>
+      <userOrGroup>Członkostwo:</userOrGroup>
     </label>
     <msg>
       <userOrGroup-alreadyExists>To członkostwo już istnieje. Proszę wybrać inne.</userOrGroup-alreadyExists>
@@ -2552,7 +2549,6 @@
   </UIDriveForm>
   <DriveInputSet>
     <title>
-      <RemovePermission>Remove Permission</RemovePermission>
       <ChooseNodeType>Wybierz typy węzłów</ChooseNodeType>
       <RemoveNodeType>Usuń</RemoveNodeType>
     </title>

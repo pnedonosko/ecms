@@ -39,7 +39,7 @@
   jsManager.require("SHARED/ecm-utils", "ecmutil").require("SHARED/multiUpload", "multiUpload")
 	.require("SHARED/openDocumentInOffice", "openDocumentInOffice")
   .addScripts('multiUpload.displayCorrectUploadButton();')
-	.addScripts("eXo.ecm.OpenDocumentInOffice.updateLabel('"+currentNodePath+"');");
+	.addScripts("eXo.ecm.OpenDocumentInOffice.updateLabel('"+ org.exoplatform.ecm.utils.text.Text.escapeIllegalJcrChars(currentNodePath)+"');");
 
   def showUploadInput = false;
   
@@ -100,7 +100,7 @@
 					</li>                                                                                           <%
 				}/*for tabs loops*/                                                                                   %>
 					<li class="dropdown pull-right listHiddenTabsContainer">
-						<a data-toggle="dropdown" class="dropdown-toggle" href="#"><%=_ctx.appRes("UIViewBar.label.more")%> <i class="uiIconMiniArrowDown uiIconLightGray"></i></a>
+						<a data-toggle="dropdown" class="dropdown-toggle"><%=_ctx.appRes("UIViewBar.label.more")%> <i class="uiIconMiniArrowDown uiIconLightGray"></i></a>
 							<ul class="dropdown-menu">
 								<!-- <li><a data-toggle="tab" href="#dropdown1_4">Tab demo1</a></li> -->
 							</ul>
@@ -151,7 +151,7 @@
 						 } //for loop
 					 %>
 					 <li class="dropdown pull-right listHiddenActionsContainer" style="display: none;">
-						 <a data-toggle="dropdown" class="dropdown-toggle" href="#"><%=_ctx.appRes("UIViewBar.label.more")%> <i class="uiIconMiniArrowDown uiIconLightGray"></i></a>
+						 <a data-toggle="dropdown" class="dropdown-toggle"><%=_ctx.appRes("UIViewBar.label.more")%> <i class="uiIconMiniArrowDown uiIconLightGray"></i></a>
 						 <ul class="dropdown-menu" id="ListHideContainer"></ul>
 					 </li>
 				 </ul>

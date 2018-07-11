@@ -65,10 +65,6 @@
       actionArea.onmouseout = Self.mouseOutGround;
           actionArea.onfocus = Self.mouseOverGround;
           actionArea.onblur = Self.mouseOutGround;
-      gj("div.FillOutElement").remove();
-      var fillOutElement = document.createElement('div');
-      fillOutElement.className = "FillOutElement";
-      actionArea.appendChild(fillOutElement);
       //remove context menu
       var contextMenu = document.getElementById(Self.contextMenuId);
       if (contextMenu) contextMenu.parentNode.removeChild(contextMenu);
@@ -1066,7 +1062,7 @@
            gj(this.parentNode).width(gj(this).width());
            gj(this.parentNode).height(gj(this).height());
         }).each(function() {
-          if(this.complete) gj(this).load();
+           if(this.complete) gj(this).trigger('load');
            gj(this).parents(".loadingProgressIcon").addClass("hidden-loading");
         });
     };

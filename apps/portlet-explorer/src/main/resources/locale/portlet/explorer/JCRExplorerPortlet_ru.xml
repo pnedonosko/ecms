@@ -300,7 +300,7 @@
       <ManageActions>Действия</ManageActions>
       <ExportNode>Экспорт</ExportNode>
       <ImportNode>Импорт</ImportNode>
-      <OverloadThumbnail>Совместить эскиз</OverloadThumbnail>
+      <OverloadThumbnail>Изменить Изображение Значка</OverloadThumbnail>
       <ManageHidden>Показать/скрыть содержание</ManageHidden>
       <ViewReferences>Ссылки</ViewReferences>
       <ViewNodeType>Типы</ViewNodeType>
@@ -1350,12 +1350,13 @@
       <empty>Нажмите здесь, чтобы добавить резюме</empty>
     </summary>
     <tooltip>
+      <original>Original Version</original>
       <version>Версия</version>
       <baseVersion>Базовая версия</baseVersion>
       <addLabel>Добавить метку</addLabel>
       <removeLable>Удалить метку</removeLable>
       <restoreVersion>Восстановить версию</restoreVersion>
-      <viewVersion>Просмотреть сведения о версии</viewVersion>
+      <viewVersion>Просмотр Версии</viewVersion>
       <deleteVersion>Удалить версию</deleteVersion>
       <compareVersion>Сравнить с базовой версией</compareVersion>
     </tooltip>

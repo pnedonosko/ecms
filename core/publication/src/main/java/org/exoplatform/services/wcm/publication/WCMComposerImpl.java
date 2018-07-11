@@ -248,8 +248,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     String orderBy = filters.get(FILTER_ORDER_BY);
     String orderType = filters.get(FILTER_ORDER_TYPE);
     String visibility = filters.get(FILTER_VISIBILITY);
-    long offset = (filters.get(FILTER_OFFSET)!=null)?new Long(filters.get(FILTER_OFFSET)):0;
-    long totalSize = (filters.get(FILTER_TOTAL)!=null)?new Long(filters.get(FILTER_TOTAL)):0;
+
 
     String remoteUser = getRemoteUser();
 
@@ -264,23 +263,95 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
     if (LOG.isDebugEnabled()) LOG.debug("##### "+path+":"+version+":"+remoteUser+":"+orderBy+":"+orderType);
 
-    NodeIterator nodeIterator ;
-    if (totalSize==0) {
-      SessionProvider systemProvider = WCMCoreUtils.getSystemSessionProvider();
-      nodeIterator = getViewableContents(workspace, path, filters, systemProvider, false);
-      if (nodeIterator != null) {
-        totalSize = nodeIterator.getSize();
-      }
-    }
+
 
     if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
       sessionProvider = remoteUser == null?
                         aclSessionProviderService.getAnonymSessionProvider() :
                         aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
     }
+    ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
+    Session session = sessionProvider.getSession(workspace, manageableRepository);
+    Node currentFolder = null;
+    if (session.getRootNode().hasNode(path.substring(1))) {
+      currentFolder = session.getRootNode().getNode(path.substring(1));
+    }
 
-    nodeIterator = getViewableContents(workspace, path, filters, sessionProvider, true);
+    Result result;
+    //Distinguish whether the targeted nodes are symlinks or not
+    if (currentFolder != null && currentFolder.isNodeType("exo:taxonomy")) {
+      result = getPaginatedTaxonomiesContent(nodeLocation, workspace, filters, sessionProvider);
+    } else {
+      result = getPaginatedNodesContent(nodeLocation, workspace, filters, sessionProvider);
+    }
+
+    return result;
+  }
+
+  /**
+   * return paginated result in case of taxonomies nodes. This nodes are loaded in memory from jcr then
+   * filtered against publication because the information about publication is not in the symlink but in its target
+   * node
+   * @param nodeLocation
+   * @param workspace
+   * @param filters
+   * @param sessionProvider
+   * @return current page result with populating taxonomies
+   * @throws Exception
+   */
+  private Result getPaginatedTaxonomiesContent(NodeLocation nodeLocation, String workspace,
+                                               HashMap<String, String> filters,
+                                               SessionProvider sessionProvider) throws Exception{
     List<Node> nodes = new ArrayList<Node>();
+    long totalSize;
+    long offset = (filters.get(FILTER_OFFSET)!=null)?new Long(filters.get(FILTER_OFFSET)):0;
+    String path = nodeLocation.getPath();
+    NodeIterator taxonomyNodeIterator = getViewableContents(workspace, path, filters, sessionProvider, false);
+    List<Node> taxonomyNodes = new ArrayList<Node>();
+    Node taxonomyNode = null, taxonomyViewNode = null;
+    if (taxonomyNodeIterator != null) {
+      while (taxonomyNodeIterator.hasNext()) {
+        taxonomyNode = taxonomyNodeIterator.nextNode();
+        taxonomyViewNode = getViewableContent(taxonomyNode, filters);
+        if (taxonomyViewNode != null) {
+          taxonomyNodes.add(taxonomyViewNode);
+        }
+      }
+    }
+    long limit = (filters.get(FILTER_LIMIT)!=null)?new Integer(filters.get(FILTER_LIMIT)):0;
+    long max = offset + limit;
+    totalSize = taxonomyNodes.size();
+    if (max > totalSize){
+      max = totalSize;
+    }
+    for (long i = offset ; i < max ; i++ ){
+      nodes.add(taxonomyNodes.get((int)i));
+    }
+
+    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
+    return result;
+
+  }
+
+  /**
+   * return paginated result in case of document nodes. The nodes are filtered in jcr side. The publication statut is
+   * part of node's properties
+   * @param nodeLocation
+   * @param workspace
+   * @param filters
+   * @param sessionProvider
+   * @return current page result with populating nodes
+   * @throws Exception
+   */
+  private Result getPaginatedNodesContent(NodeLocation nodeLocation, String workspace,
+                                          HashMap<String, String> filters,
+                                          SessionProvider sessionProvider) throws Exception{
+    List<Node> nodes = new ArrayList<Node>();
+    long totalSize;
+    long offset = (filters.get(FILTER_OFFSET)!=null)?new Long(filters.get(FILTER_OFFSET)):0;
+    String path = nodeLocation.getPath();
+    totalSize = getViewabaleContentsSize(path, workspace, filters, sessionProvider);
+    NodeIterator nodeIterator = getViewableContents(workspace, path, filters, sessionProvider, true);
     Node node = null, viewNode = null;
     if (nodeIterator != null) {
       while (nodeIterator.hasNext()) {
@@ -291,9 +362,32 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         }
       }
     }
-    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
 
+    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
     return result;
+
+  }
+
+  /**
+   * get total contents' size
+   * @param path
+   * @param workspace
+   * @param filters
+   * @param sessionProvider
+   * @return
+   * @throws Exception
+   */
+  private long getViewabaleContentsSize(String path, String workspace,HashMap<String, String> filters,
+                                      SessionProvider sessionProvider) throws Exception {
+
+    long totalSize = (filters.get(FILTER_TOTAL)!=null)?new Long(filters.get(FILTER_TOTAL)):0;
+    if (totalSize == 0) {
+      NodeIterator nodeIterator = getViewableContents(workspace, path, filters, sessionProvider, false);
+      if (nodeIterator != null) {
+        totalSize = nodeIterator.getSize();
+      }
+    }
+    return totalSize;
   }
 
   /*

@@ -977,7 +977,7 @@
       <watchDocument>Отслеживать документ</watchDocument>
       <taggingDocument>Отметить документ</taggingDocument>
       <viewMetadatas>Просмотр метаданных</viewMetadatas>
-      <overloadThumbnail>Совместить эскиз</overloadThumbnail>
+      <overloadThumbnail>Изменить Изображение Значка</overloadThumbnail>
       <manageHidden>Скрыть/Показать контент</manageHidden>
       <comment>Комментировать</comment>
       <vote>Голосовать</vote>
@@ -2426,15 +2426,12 @@
   <UITaxonomyTreeMainForm>
     <action>
       <NextViewPermission>Следующее</NextViewPermission>
-      <Reset>Reset</Reset>
     </action>
   </UITaxonomyTreeMainForm>
 
   <UIPermissionTreeForm>
     <action>
-      <Save>Save</Save>
       <Cancel>#{word.cancel}</Cancel>
-      <Reset>Reset</Reset>
       <NextAddAction>Следующее</NextAddAction>
       <Previous>Предыдущее</Previous>
     </action>
@@ -2552,7 +2549,6 @@
   </UIDriveForm>
   <DriveInputSet>
     <title>
-      <RemovePermission>Remove Permission</RemovePermission>
       <ChooseNodeType>Выбрать типы узлов</ChooseNodeType>
       <RemoveNodeType>Удалить</RemoveNodeType>
     </title>

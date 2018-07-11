@@ -977,7 +977,7 @@
       <watchDocument>Suivre</watchDocument>
       <taggingDocument>Tagger</taggingDocument>
       <viewMetadatas>Métadonnées</viewMetadatas>
-      <overloadThumbnail>Surcharger une vignette</overloadThumbnail>
+      <overloadThumbnail>Personnaliser l’icône</overloadThumbnail>
       <manageHidden>Cacher/Montrer le contenu</manageHidden>
       <comment>Commenter</comment>
       <vote>Voter</vote>
@@ -2426,15 +2426,12 @@
   <UITaxonomyTreeMainForm>
     <action>
       <NextViewPermission>Suivant</NextViewPermission>
-      <Reset>Reset</Reset>
     </action>
   </UITaxonomyTreeMainForm>
 
   <UIPermissionTreeForm>
     <action>
-      <Save>Save</Save>
       <Cancel>#{word.cancel}</Cancel>
-      <Reset>Reset</Reset>
       <NextAddAction>Suivant</NextAddAction>
       <Previous>Précédent</Previous>
     </action>
@@ -2552,7 +2549,6 @@
   </UIDriveForm>
   <DriveInputSet>
     <title>
-      <RemovePermission>Remove Permission</RemovePermission>
       <ChooseNodeType>Choisir un type de noeud</ChooseNodeType>
       <RemoveNodeType>Supprimer</RemoveNodeType>
     </title>

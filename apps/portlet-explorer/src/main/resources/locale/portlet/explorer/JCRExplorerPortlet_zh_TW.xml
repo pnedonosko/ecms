@@ -300,7 +300,7 @@
       <ManageActions>操作</ManageActions>
       <ExportNode>匯出</ExportNode>
       <ImportNode>匯入</ImportNode>
-      <OverloadThumbnail>超載的縮圖</OverloadThumbnail>
+      <OverloadThumbnail>Change Icon Image</OverloadThumbnail>
       <ManageHidden>顯示/隱藏內容</ManageHidden>
       <ViewReferences>参考</ViewReferences>
       <ViewNodeType>類型</ViewNodeType>
@@ -1350,12 +1350,13 @@
       <empty>Click here to add a summary</empty>
     </summary>
     <tooltip>
+      <original>Original Version</original>
       <version>Version</version>
       <baseVersion>current version</baseVersion>
       <addLabel>增加標籤</addLabel>
       <removeLable>移除標籤</removeLable>
       <restoreVersion>還原的版本</restoreVersion>
-      <viewVersion>查看版本資訊</viewVersion>
+      <viewVersion>View Version</viewVersion>
       <deleteVersion>刪除版本</deleteVersion>
       <compareVersion>與基礎版本比較</compareVersion>
     </tooltip>

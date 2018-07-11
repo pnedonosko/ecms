@@ -48,7 +48,7 @@ import java.util.Locale;
         if(identity != null && identity.getProfile() != null) {
           profileFullName = identity.getProfile().getFullName();
         }
-        return profileFullName;
+        return StringEscapeUtils.escapeHtml(profileFullName);
     }
 
   public void writeNodes() {
@@ -92,7 +92,12 @@ import java.util.Locale;
       boolean isBaseVersion = uicomponent.isBaseVersion(node);
 
       String versionNumber = uicomponent.isRootVersion(node) ? uicomponent.getRootVersionNum() : node.getName();
-      String displayNumber = node.getDisplayName();
+      String displayNumber = "";
+      if (node.getDisplayName().equals("0")) {
+        displayNumber = _ctx.appRes("UIVersionInfo.tooltip.original");
+      }else {
+        displayNumber = node.getDisplayName();
+      }
       String emptySummary = _ctx.appRes("UIVersionInfo.summary.empty");
       String versionId = "version_"+versionNumber;
       String baseVersion = "";
@@ -147,7 +152,8 @@ import java.util.Locale;
                     }
                     def docDownloadUrl = org.exoplatform.wcm.webui.Utils.getDownloadLink(currentVersionNode);
                     def docOpenUri = uicomponent.getLinkInDocumentsApp(currentNode.getPath());
-                    def docPreviewUri = "javascript:require(['SHARED/social-ui-activity'], function(activity) {activity.previewDoc(event, {doc: {id:'" + currentVersionNode.getUUID() + "', fileType: '" + fileType +"', repository:'" + repository + "', workspace:'" + preferenceWS + "', path:'" + currentNode.getPath() + "', title:'" + currentNode.getName() + "', downloadUrl:'" + docDownloadUrl + "', openUrl:'" + docOpenUri + "'}, version: {number:'" + versionNumber + "'}, author: {username:'" + authorUserName + "', fullname:'" + authorFullName + "', avatarUrl:'" + avatarURL + "', profileUrl:'" + profileURL + "'}})})";
+                    def isWebContent = uicomponent.isWebContent();
+                    def docPreviewUri = "javascript:require(['SHARED/documentPreview'], function(documentPreview) {documentPreview.init({doc: {id:'" + currentVersionNode.getUUID() + "', fileType: '" + fileType +"', repository:'" + repository + "', workspace:'" + preferenceWS + "', path:'" + currentNode.getPath() + "', title:'" + currentNode.getName() + "', downloadUrl:'" + docDownloadUrl + "', openUrl:'" + docOpenUri + "', isWebContent: " + isWebContent + "}, version: {number:'" + versionNumber + "'}, author: {username:'" + authorUserName + "', fullname:'" + authorFullName + "', avatarUrl:'" + avatarURL + "', profileUrl:'" + profileURL + "'}})})";
                 %>
                 <a class="btn" onclick="<%=docPreviewUri %>" rel="tooltip" data-placement="bottom" title="<%= _ctx.appRes('UIVersionInfo.tooltip.viewVersion'); %>"><i class="uiIconWatch uiIconLightGray"></i></a>
                 <%
@@ -163,9 +169,9 @@ import java.util.Locale;
     <%
     def actionUrl = StringUtils.getNestedString(uicomponent.event('AddSummary', node.getPath()),"javascript:ajaxGet(\'","\')");
     if (uicomponent.hasPermission(currentVersionNode))
-      jsManager.require("SHARED/jquery", "gj").require("SHARED/X-editable", "xeditable").addScripts("gj(\"#versionSummary"+versionNumber+"\").editable({ mode: \"inline\", url: \""+actionUrl+"\", pk:\""+versionNumber+"\" ,type: \"text\" ,emptytext: \""+emptySummary+"\" });");
+      jsManager.require("SHARED/jquery", "gj").require("SHARED/UIVersionInfo", "uiVersionInfo").require("SHARED/X-editable", "xeditable").addScripts("gj(\"#versionSummary"+versionNumber+"\").editable({ mode: \"inline\", url: eXo.ecm.UIVersionInfo.sendVersionSummary, params : {path:\""+ node.getPath() +"\" , actionUrl:\""+ actionUrl +"\"}, pk:\""+versionNumber+"\" ,type: \"text\" ,emptytext: \""+emptySummary+"\" });");
     else
-      jsManager.require("SHARED/jquery", "gj").require("SHARED/X-editable", "xeditable").addScripts("gj(\"#versionSummary"+versionNumber+"\").editable({ mode: \"inline\", url: \""+actionUrl+"\", pk:\""+versionNumber+"\" ,type: \"text\" ,disabled: \"true\" ,emptytext: \""+emptySummary+"\" });");
+      jsManager.require("SHARED/jquery", "gj").require("SHARED/UIVersionInfo", "uiVersionInfo").require("SHARED/X-editable", "xeditable").addScripts("gj(\"#versionSummary"+versionNumber+"\").editable({ mode: \"inline\", url: eXo.ecm.UIVersionInfo.sendVersionSummary, params : {path:\""+ node.getPath() +"\" , actionUrl:\""+ actionUrl +"\"}, pk:\""+versionNumber+"\" ,type: \"text\" ,disabled: \"true\" ,emptytext: \""+emptySummary+"\" });");
     }
   }
 %>

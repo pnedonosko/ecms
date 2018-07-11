@@ -26,6 +26,7 @@ import org.exoplatform.ecm.webui.component.explorer.control.action.AddDocumentAc
 import org.exoplatform.ecm.webui.component.explorer.control.action.EditDocumentActionComponent;
 import org.exoplatform.ecm.webui.component.explorer.control.action.EditPropertyActionComponent;
 import org.exoplatform.ecm.webui.component.explorer.sidebar.UITreeExplorer;
+import org.exoplatform.ecm.webui.component.explorer.versions.UIVersionInfo;
 import org.exoplatform.ecm.webui.utils.JCRExceptionManager;
 import org.exoplatform.ecm.webui.utils.Utils;
 import org.exoplatform.portal.application.PortalRequestContext;
@@ -34,6 +35,7 @@ import org.exoplatform.services.cms.documents.AutoVersionService;
 import org.exoplatform.services.cms.drives.DriveData;
 import org.exoplatform.services.cms.drives.ManageDriveService;
 import org.exoplatform.services.cms.drives.impl.ManageDriveServiceImpl;
+import org.exoplatform.services.cms.link.NodeFinder;
 import org.exoplatform.services.cms.views.ManageViewService;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
@@ -96,6 +98,8 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
 
   final static private String DOC_NOT_FOUND    = "doc-not-found";
 
+  private NodeFinder nodeFinder;
+
   private String backTo ="";
 
   private boolean flagSelect = false;
@@ -108,6 +112,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
       explorerContainer.initExplorer();
       addChild(UIJcrExplorerEditContainer.class, null, null).setRendered(false);
     }
+    nodeFinder = getApplicationComponent(NodeFinder.class);
   }
 
   public boolean isFlagSelect() { return flagSelect; }
@@ -205,7 +210,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
                uiExplorer.getWorkspaceName()  + "','" + 
                uiExplorer.getDriveData().getName()  + "','" +
                uiTreeExplorer.getLabel()  + "','" +
-               uiExplorer.getCurrentPath() + "','" +
+               Text.escapeIllegalJcrChars(uiExplorer.getCurrentPath()) + "','" +
                org.exoplatform.services.cms.impl.Utils.getPersonalDrivePath(uiExplorer.getDriveData().getHomePath(),
                ConversationState.getCurrent().getIdentity().getUserId())+ "', '"+
               autoVersionService.isVersionSupport(uiExplorer.getCurrentPath(), uiExplorer.getCurrentWorkspace())+"');")
@@ -287,6 +292,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
       if (requestParamName.equals("path")) {
         String nodePathParam = pcontext.getRequestParameter("path");
         String currentRepo = WCMCoreUtils.getRepository().getConfiguration().getName();
+        String userId = Util.getPortalRequestContext().getRemoteUser();
         if (nodePathParam != null && nodePathParam.length() > 0) {
           Pattern patternUrl = Pattern.compile("([^/]+)/(.*)");
           matcher = patternUrl.matcher(nodePathParam);
@@ -294,6 +300,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
             mapParam.put("repository", currentRepo);
             mapParam.put("drive", matcher.group(1));
             mapParam.put("path", matcher.group(2));
+            mapParam.put("userId",userId);
           } else {
             patternUrl = Pattern.compile("(.*)");
             matcher = patternUrl.matcher(nodePathParam);
@@ -419,9 +426,7 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
     try {
       Session session = 
         WCMCoreUtils.getUserSessionProvider().getSession(driveData.getWorkspace(), rservice.getCurrentRepository());
-      // check if it exists
-      // we assume that the path is a real path
-      session.getItem(contentRealPath);
+      nodeFinder.getItem(session, contentRealPath);
     } catch(AccessDeniedException ace) {
       Object[] args = { driveName };
       uiApp.addMessage(new ApplicationMessage("UIDrivesArea.msg.access-denied", args,
@@ -496,8 +501,12 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
         
       }
     }
-
     boolean isAddNew = Boolean.valueOf(Util.getPortalRequestContext().getRequestParameter("addNew"));
+
+    if(!isAddNew && !isEdit) {
+      showVersionHistory(selectedNode, uiWorkingArea);
+    }
+
     if (!isEdit && isAddNew) {
       if (canManageNode(selectedNode, uiApp, uiExplorer, uiActionbar, context, AddDocumentActionComponent.getFilters())) {
         AddDocumentActionComponent.addDocument(null, uiExplorer, uiApp, this, context);
@@ -508,6 +517,22 @@ public class UIJCRExplorerPortlet extends UIPortletApplication {
       }
     }
     uiExplorer.refreshExplorer(null, (isAddNew && isEdit));
+  }
+
+  private void showVersionHistory(Node selectedNode, UIWorkingArea uiWorkingArea) throws Exception {
+    Boolean isDisplayVersionHistory = Boolean.valueOf(Util.getPortalRequestContext().getRequestParameter("versions"));
+    if (isDisplayVersionHistory && selectedNode.isNodeType(Utils.MIX_VERSIONABLE)) {
+      UIDocumentWorkspace uiDocumentWorkspace = uiWorkingArea.getChild(UIDocumentWorkspace.class);
+      if (uiDocumentWorkspace != null) {
+        UIVersionInfo uiVersionInfo = uiDocumentWorkspace.getChild(UIVersionInfo.class);
+        if (uiVersionInfo != null) {
+          uiVersionInfo.setCurrentNode(selectedNode);
+          uiVersionInfo.setRootOwner(selectedNode.getProperty(Utils.EXO_LASTMODIFIER).getString());
+          uiVersionInfo.activate();
+          uiDocumentWorkspace.setRenderedChild(UIVersionInfo.class);
+        }
+      }
+    }
   }
 
   private boolean canManageNode(Node selectedNode,

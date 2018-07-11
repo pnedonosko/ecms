@@ -26,9 +26,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-import javax.activation.MimetypesFileTypeMap;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -45,14 +45,11 @@ import org.exoplatform.services.cms.thumbnail.ThumbnailService;
 import org.exoplatform.services.cms.thumbnail.impl.ThumbnailUtils;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.exoplatform.wcm.connector.viewer.PDFViewerRESTService;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+import org.exoplatform.services.wcm.utils.WCMCoreUtils;
 
 /**
  * Returns a responding data as a thumbnail image.
@@ -219,7 +216,7 @@ public class ThumbnailRESTService implements ResourceContainer {
     DateFormat dateFormat = new SimpleDateFormat(IF_MODIFIED_SINCE_DATE_FORMAT);
     if (!thumbnailService_.isEnableThumbnail())
       return Response.ok().header(LAST_MODIFIED_PROPERTY, dateFormat.format(new Date())).build();
-    Node showingNode = getShowingNode(workspaceName, getNodePath(nodePath));
+    Node showingNode = getShowingNode(workspaceName, nodePath);
     Node targetNode = getTargetNode(showingNode);
     if (targetNode.isNodeType("nt:file") || targetNode.isNodeType("nt:resource")) {
       Node content = targetNode;
@@ -292,7 +289,7 @@ public class ThumbnailRESTService implements ResourceContainer {
     DateFormat dateFormat = new SimpleDateFormat(IF_MODIFIED_SINCE_DATE_FORMAT);
     if (!thumbnailService_.isEnableThumbnail())
       return Response.ok().header(LAST_MODIFIED_PROPERTY, dateFormat.format(new Date())).build();
-    Node showingNode = getShowingNode(workspaceName, getNodePath(nodePath));
+    Node showingNode = getShowingNode(workspaceName, nodePath);
     Node parentNode = showingNode.getParent();
     String identifier = ((NodeImpl) showingNode).getInternalIdentifier();
     Node targetNode = getTargetNode(showingNode);
@@ -413,7 +410,14 @@ public class ThumbnailRESTService implements ResourceContainer {
     Node showingNode = null;
     if(nodePath.equals("/")) showingNode = session.getRootNode();
     else {
-      showingNode = (Node) nodeFinder_.getItem(session, nodePath);
+      if (!nodePath.startsWith("/")) {
+        nodePath = "/" + nodePath;
+      }
+      try {
+        showingNode = (Node) nodeFinder_.getItem(session, nodePath);
+      } catch (PathNotFoundException e) {
+        showingNode = (Node) nodeFinder_.getItem(session, getNodePath(nodePath));
+      }
     }
     return showingNode;
   }

@@ -977,7 +977,7 @@
       <watchDocument>Vigilar Documento</watchDocument>
       <taggingDocument>Etiquetar este documento</taggingDocument>
       <viewMetadatas>Ver metadatos</viewMetadatas>
-      <overloadThumbnail>Miniatura de sobrecarga</overloadThumbnail>
+      <overloadThumbnail>Cambiar Imagen del Icono</overloadThumbnail>
       <manageHidden>Esconder/Mostrar contenido</manageHidden>
       <comment>Comentar</comment>
       <vote>Votar</vote>
@@ -992,7 +992,7 @@
       <checkOut>Desproteger</checkOut>
       <shareDocuments>Compartir</shareDocuments>
       <openDocument>Edición remota</openDocument>
-      <editProperty>Editar propiedades del documento</editProperty>
+      <editProperty>Propiedades del documento</editProperty>
       <uploadNewVersion>Subir nueva versión</uploadNewVersion>
     </label>
     <action>
@@ -2426,15 +2426,12 @@
   <UITaxonomyTreeMainForm>
     <action>
       <NextViewPermission>Siguiente</NextViewPermission>
-      <Reset>Reset</Reset>
     </action>
   </UITaxonomyTreeMainForm>
 
   <UIPermissionTreeForm>
     <action>
-      <Save>Save</Save>
       <Cancel>#{word.cancel}</Cancel>
-      <Reset>Reset</Reset>
       <NextAddAction>Siguiente</NextAddAction>
       <Previous>Previo</Previous>
     </action>
@@ -2552,7 +2549,6 @@
   </UIDriveForm>
   <DriveInputSet>
     <title>
-      <RemovePermission>Remove Permission</RemovePermission>
       <ChooseNodeType>Seleccione los tipos de nodo</ChooseNodeType>
       <RemoveNodeType>Quitar</RemoveNodeType>
     </title>

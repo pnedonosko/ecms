@@ -300,7 +300,7 @@
       <ManageActions>Eylemler</ManageActions>
       <ExportNode>Dışa Aktar</ExportNode>
       <ImportNode>İçe aktar</ImportNode>
-      <OverloadThumbnail>Çok küçük resim</OverloadThumbnail>
+      <OverloadThumbnail>İkon Görüntüsünü Değiştir</OverloadThumbnail>
       <ManageHidden>İçeriği göster/gizle</ManageHidden>
       <ViewReferences>Referanslar</ViewReferences>
       <ViewNodeType>Türler</ViewNodeType>
@@ -1350,12 +1350,13 @@
       <empty>Özet eklemek için buraya tıklayın</empty>
     </summary>
     <tooltip>
+      <original>Original Version</original>
       <version>Sürüm</version>
       <baseVersion>geçerli sürüm</baseVersion>
       <addLabel>Etiket Ekle</addLabel>
       <removeLable>Etiketi Kaldır</removeLable>
       <restoreVersion>Sürümü geri yükle</restoreVersion>
-      <viewVersion>Sürüm bilgilerini görüntüle</viewVersion>
+      <viewVersion>Sürümü göster</viewVersion>
       <deleteVersion>Sürümü Sil</deleteVersion>
       <compareVersion>Temel sürüm ile karşılaştır</compareVersion>
     </tooltip>

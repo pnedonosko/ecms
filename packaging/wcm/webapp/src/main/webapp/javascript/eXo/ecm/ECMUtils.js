@@ -8,7 +8,7 @@
 		var Browser = eXo.core.Browser;
 		Self.waitContainerRetry = 0;
 		Self.waitContainerRetryMax = 200;
-		Self.MiniumLeftContainerWidth = 250;
+		Self.MiniumLeftContainerWidth = 240;
 		Self.MiniumRightContainerWidth = 251;
 		Self.waitInterval              = 25;
 		Self.UIBrokenCheckingInterval  = 150;
@@ -84,6 +84,13 @@
 		  exdate.setDate(exdate.getDate() + exdays);
 		  var c_value = escape(value) + ((exdays == null) ? "" : "; expires=" + exdate.toUTCString());
 		  document.cookie = c_name + "=" + c_value;
+		}
+		ECMUtils.prototype.fixPDFViewerHeight = function() {
+      if (gj('#outerContainer').is(':visible') && gj('#UIJCRExplorer').length > 0) {
+        gj('#outerContainer')
+            .css('min-height',
+                'calc(100vh - ' + (gj('#outerContainer').offset().top + 60) + 'px)');
+      }
 		}
 		ECMUtils.prototype.fixHeight = function (portletId) {
 		  var portlet = document.getElementById(portletId);
@@ -448,25 +455,28 @@
 			my_window.document.write('<script> window.location.href = "' + downloadLink + '"; </script>');
 		};
 
-    ECMUtils.prototype.initClipboard = function () {
-      // Clear clipboard first
-      gj(".zeroClipboard").remove();
-
-      // Init clipboard for copying url
-      var contextMenu = document.getElementById('ECMContextMenu');
-      gj(contextMenu).find("i.uiIconEcmsCopyUrlToClipboard").each(function() {
-        var parent = gj(this).closest('a');
-        var isFlash = navigator.plugins["Shockwave Flash"];
-        if(isFlash === undefined) {
-          // ECMS-7362. Hide Copy URL to clipboard button when browser is not installed the adobe flash player
-          gj(parent).closest('.RightClickCustomItem').hide();
-          return;
+      /**
+       * Init clipboard for copying url
+       */
+      ECMUtils.prototype.initClipboard = function () {
+        var contextMenu = document.getElementById('ECMContextMenu');
+        var copyUrlsButtons = contextMenu.querySelectorAll('i.uiIconEcmsCopyUrlToClipboard');
+        for(var i = 0; i < copyUrlsButtons.length; i++) {
+          var parent = copyUrlsButtons[i].parentNode;
+          parent.addEventListener('click', function() {
+            var urlInput = document.createElement('input');
+            // DOM element cannot be hidden so we move it outside of the screen to hide it
+            urlInput.style.position = 'absolute';
+            urlInput.style.left = '-9999px';
+            urlInput.setAttribute('value', parent.getAttribute('path'));
+            parent.appendChild(urlInput);
+            urlInput.select();
+            // copy selected content in clipboard
+            document.execCommand('copy');
+            parent.removeChild(urlInput);
+          }, false);
         }
-        var clip = new ZeroClipboard.Client();
-        clip.glue(gj(parent).attr('id'));
-        clip.setText(gj(parent).attr('path'));
-      });
-    };
+      };
 
     ECMUtils.prototype.closeContextMenu = function (element) {
         var contextMenu = document.getElementById("ECMContextMenu");
@@ -561,12 +571,6 @@
 		ECMUtils.prototype.resizeMouseMoveSideBar = function (event) {
 		  var event = event || window.event;
 		  if (Self.initWithoutLeftContainer()) return;
-		  var resizableBlock = gj(Self.uiLeftContainer).find("div.uiResizableBlock:first")[0];
-		  var deltaX = event.clientX - eXo.ecm.ECMUtils.currentMouseX;
-		  eXo.ecm.ECMUtils.savedResizeDistance = deltaX;
-		  eXo.ecm.ECMUtils.savedResizableMouseX = eXo.ecm.ECMUtils.resizableBlockWidth + deltaX + "px";
-		  eXo.ecm.ECMUtils.savedLeftContainer = eXo.ecm.ECMUtils.currentWidth + deltaX + "px";
-		  eXo.ecm.ECMUtils.isResizedLeft = false;
 
 			var allowedWidth = parseInt(Self.uiWorkingArea.offsetWidth) - Self.MiniumRightContainerWidth;
 			// Fix minimium width can be resized
@@ -637,11 +641,6 @@
 		      }
 		    }
 		  }
-		  if (!showSideBar) {
-		    container.style.display = 'none';
-		    var resizeButton = gj(Self.uiWorkingArea).find("a.resizeButton:first")[0];
-		    if (resizeButton) resizeButton.className = "resizeButton";
-		  }
 		}
 
 		ECMUtils.prototype.moveItemToDropDown = function (movedItem) {
@@ -696,24 +695,21 @@
 			parentOfMovedNode.removeChild(movedItem);
 		}
 		/**
+		 * Handle for the resize event of Content Explorer
+		 * Calculate to determine which actionButton will be visible, which will be put
+		 * in HiddenActionList
+		 *
 		 * @function        actionbarContainer_OnResize
-		 * @purpose         Handle for the resize event of Content Explorer
-		 *                  Calculate to determine which actionButton will be visible, which will be put
-		 *                  in HiddenActionList
 		 * @author          vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.actionbarContainer_OnResize = function () {
 			var divAction = document.getElementById("uiActionsBarContainer");
 			
 			var actionbar= gj('#UIActionBar');
-			if (actionbar) { //VinhNT workaround for the un-expand width of ActionBar problem, should be improved later
-			  actionbar.width(actionbar.parent().width());
-			}
 			var viewbar = gj('#UIViewBarContainer')[0];
 			var uiMainActionContainer   = gj(divAction).find("ul.nav-pills")[0];
 			if (!uiMainActionContainer) return; 
 			var listHiddenActionContainer = gj(uiMainActionContainer).find("li.listHiddenActionsContainer:first")[0];
-			gj(listHiddenActionContainer).css("margin-right", viewbar.offsetWidth + "px");
 			var uiDropdownContainer   = gj(listHiddenActionContainer).find("ul.dropdown-menu:first")[0];
 			var allowedSpace  = uiMainActionContainer.offsetWidth - viewbar.offsetWidth - 20 ; //left&right padding
 			Self.containerWithDropDownItem_OnResize(uiMainActionContainer, allowedSpace, listHiddenActionContainer, uiDropdownContainer, "active");
@@ -738,17 +734,15 @@
 		};
 
 		/**
+		 * Handle for the resize event of Content Explorer
+		 * Calculate to determine which actionButton will be visible, which will be put
+		 * in HiddenActionList for context bar (when selecting nodes in TreeList template)
+		 *
 		 * @function       contextActionBarContainer_OnResize
-		 * @purpose        Handle for the resize event of Content Explorer
-		 *                  Calculate to determine which actionButton will be visible, which will be put
-		 *                  in HiddenActionList for context bar (when selecting nodes in TreeList template)
 		 */
 		ECMUtils.prototype.contextActionBarContainer_OnResize = function () {
 			var divAction = document.getElementById("ActionMenuPlaceHolder");
 			var actionbar= gj('#UIActionBar')[0];
-//			if (actionbar) { //VinhNT workaround for the un-expand width of ActionBar problem, should be improved later
-//			  actionbar.width(actionbar.parent().width()-2);
-//			}
 			var uiMainActionContainer   = gj(divAction).find("ul.dropdown-menu")[0];
 			if (!uiMainActionContainer) return; 
 			var listHiddenActionContainer = gj(uiMainActionContainer).find("li.listHiddenActionsContainer:first")[0];
@@ -762,8 +756,9 @@
 			gj(visibleTabsChildren[visibleTabsChildren.length-1]).addClass("last");
 		};		
 		/**
+		 * Re-arrange the TabsContainer inside Right Container
+		 *
 		 * @function       tabsContainer_OnResize
-		 * @purpose        re-arrange the TabsContainer inside Right Container
 		 * @author         vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.tabsContainer_OnResize = function () {
@@ -780,8 +775,9 @@
 		  gj(visibleTabsChildren[visibleTabsChildren.length-1]).addClass("last");
 		}
 		/**
+		 * Re-arrange the a Container that contains visible items and dropdown list for the invisible items
+		 *
 		 * @function       containerWithDropDownItem_OnResize
-		 * @purpose        re-arrange the a Container that contains visible items and dropdown list for the invisible items
 		 * @author         vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.containerWithDropDownItem_OnResize = function (mainContainer, allowedSpace, listHiddenContainer, dropdownContainer, activeClass) {
@@ -863,8 +859,9 @@
 		}
 		
 		/**
+		 * Maintain object reference to some container which are accessed during resize
+		 *
 		 * @function        loadContainerReference
-		 * @purpose         Maintain object reference to some container which are accessed during resize
 		 * @author          vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.loadContainerReference = function () {
@@ -876,8 +873,9 @@
 		  Self.uiResizeSideBar = gj(Self.uiWorkingArea).find("div.resizeBar:first")[0];
 		}
 		/**
+		 * Load container width from cookies
+		 *
 		 * @function   loadContainerWidth
-		 * @purpose    Load container width from cookies
 		 * @author     vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.loadContainerWidth = function (leftWidth) {
@@ -886,55 +884,27 @@
 
 		  if (leftWidth) {
 		    leftContainerWidth = leftWidth;
-		  } else {
-		    leftContainerWidth = Self.getCookie(eXo.env.portal.userName + "_leftContainerWidth");
-		    showSideBar = Self.getCookie(eXo.env.portal.userName + "_CEShowSideBar") != "false";
 		  }
-		  if (Self.initWithoutLeftContainer()) {
-		    if (Self.uiWorkingArea)
-		      Self.uiRightContainer.style.width = Self.uiWorkingArea.offsetWidth + "px";
-		  } else {
+		  if (!Self.initWithoutLeftContainer()) {
 		    if (leftContainerWidth) {
 		      if (Self.uiWorkingArea.offsetWidth - leftContainerWidth < Self.MiniumRightContainerWidth) {
 		        leftContainerWidth = Self.uiWorkingArea.offsetWidth - Self.MiniumRightContainerWidth;
 		        Self.setCookie(eXo.env.portal.userName + "_leftContainerWidth", leftContainerWidth, 20);
 		      }
-		      Self.uiLeftContainer.style.width = (leftContainerWidth - 15) + "px";
+		      Self.uiLeftContainer.style.width = leftContainerWidth + "px";
 		    }
 		    if (Self.uiLeftContainer.offsetWidth > 0 || Self.uiLeftContainer.offsetHeight > 0) {
 		      actualLeftContainerWidth = Self.uiLeftContainer.offsetWidth;
 		    } else {
 		      actualLeftContainerWidth = 0;
 		    }
-		    Self.uiRightContainer.style.width = (Self.uiWorkingArea.offsetWidth - actualLeftContainerWidth - Self.uiResizeSideBar.offsetWidth) + "px";
-		    var resizeButton = gj(Self.uiResizeSideBar).find("a.resizeButton:first")[0];
-		    var iArrow = gj(resizeButton).children("i:first")[0];
-		    if (showSideBar) {
-		      Self.uiResizeSideBar.style.height = Self.uiLeftContainer.offsetHeight + "px";
-		      if (iArrow) iArrow.className = "uiIconArrowLeft";
-		      var resizeBarContent = gj(Self.uiResizeSideBar).find("div.resizeBarContent:first")[0];
-		      gj(resizeBarContent).css("height", Self.uiResizeSideBar.offsetHeight + "px");
-		    } else {
-		      gj(Self.uiResizeSideBar).css("height", "");
-		      var resizeBarContent = gj(Self.uiResizeSideBar).find("div.resizeBarContent:first")[0];
-		      gj(resizeBarContent).css("height", "");
-		      if (iArrow) iArrow.className = "uiIconArrowRight";    
-		      gj(Self.uiResizeSideBar).addClass("resizeNoneBorder");
-		    }
 		  }
-		  if (Self.uiDocumentWorkspace) {
-		    Self.uiDocumentWorkspace.style.width = (Self.uiRightContainer.offsetWidth - 10) + "px";
-		  }
-		  if (Self.uiDrivesArea) {
-		    Self.uiDrivesArea.style.width = (Self.uiRightContainer.offsetWidth - 10) + "px";
-		  }
+		  
 		  Self.resizeVisibleComponent();
 		  Self.actionbarContainer_OnResize();
 		  Self.contextActionBarContainer_OnResize();
 		  if (Self.documentContainer_OnResize) Self.documentContainer_OnResize();
 		  Self.tabsContainer_OnResize();
-		  Self.clearFillOutElement();
-		  Self.adjustFillOutElement();
 		  if (eXo.core.Browser.isIE()) {
 		    var jcrContainer = document.getElementById("UIJCRExplorerPortlet");
 		    if (jcrContainer) gj(jcrContainer).css("height", "100%");
@@ -995,17 +965,16 @@
 		  var resizeButton = gj(Self.uiWorkingArea).find("a.resizeButton:first")[0];
 		  var iArrow = gj(resizeButton).children("i")[0];
 		  // The bellow block are updated
-		  if (leftContainer.style.display == 'none') {
-		    leftContainer.style.display = 'block';
-		    gj(Self.uiResizeSideBar).removeClass("resizeNoneBorder");
-		    Self.uiResizeSideBar.style.height = leftContainer.offsetHeight + "px";
-		    showSideBar = true;
+		  if (gj(leftContainer).hasClass('collapsed')) {
+		  	gj(leftContainer).removeClass('collapsed');
+		  	gj(Self.uiResizeSideBar).removeClass("resizeNoneBorder");
+		  	showSideBar = true;
 		    if (iArrow) iArrow.className = "uiIconArrowLeft";
 		  } else {
-		    leftContainer.style.display = 'none';
+		    gj(leftContainer).addClass('collapsed');
 		    gj(Self.uiResizeSideBar).addClass("resizeNoneBorder");
 		    showSideBar = false;
-				if (iArrow) iArrow.className = "uiIconArrowRight";
+			if (iArrow) iArrow.className = "uiIconArrowRight";
 		  }
 		  Self.setCookie(eXo.env.portal.userName + "_CEShowSideBar", showSideBar, 20);
 		  Self.loadContainerWidth();
@@ -1114,7 +1083,6 @@
 			var arrowIcon = gj(midBox).find("i")[0];
 			var expandChild = gjTop.find("div.uiContentBox:last")[0];
 			var selectItemsBar = gjTop.find("div.uiSelectContent")[0];
-			Self.clearFillOutElement();
 			if (bottomBox.style.display == 'none') {
 				gj(expandChild).css("height", "");
 				if (gjTop.attr("savedHeight")) {
@@ -1132,7 +1100,6 @@
 				gj(expandChild).css("height", currentExpandChildHeight + deltaHeight + "px");
 				arrowIcon.className = "uiIconArrowUp";
 			}
-			Self.adjustFillOutElement();
 		}
 
 		//get SideBarContent for resizing
@@ -1176,8 +1143,9 @@
 			window.UIBrokenCheckingHandler = window.setTimeout("eXo.ecm.ECMUtils.UIBrokenChecking();", Self.UIBrokenCheckingInterval);
 		}
 		/**
-		 * @fucntion   waitForContainer
-		 * @purpose    wait for leftContainer, RightContainer and other container related to resize ready
+		 * Wait for leftContainer, RightContainer and other container related to resize ready
+		 *
+		 * @function   waitForContainer
 		 * @author     vinh_nguyen@exoplatform.com
 		 */
 		ECMUtils.prototype.waitForContainer = function () {
@@ -1261,59 +1229,6 @@
 				noticeElem.style.marginLeft = "-" + noticeElem.offsetWidth/2 + "px";
 			      }
 		}
-		}
-
-		ECMUtils.prototype.appendFillOutElement =function(parentID, tabClass) {
-			var divContainer = document.getElementById(parentID);
-			if (!divContainer) return;
-			var visibleTab = gj(divContainer).find("div." + tabClass + ":visible");
-			if (!visibleTab) return;
-			if ( visibleTab.length==0) return;
-			window.clearTimeout(window.UIBrokenCheckingHandler);
-			gj('div.FillOutElement').remove();
-			gj(visibleTab).append("<div class=\"FillOutElement\">&nbsp;</div>");
-			eXo.ecm.ECMUtils.clearFillOutElement();
-			eXo.ecm.ECMUtils.adjustFillOutElement();
-			window.UIBrokenCheckingHandler = window.setTimeout("eXo.ecm.ECMUtils.UIBrokenChecking();", eXo.ecm.ECMUtils.UIBrokenCheckingInterval);
-		}
-		ECMUtils.prototype.clearFillOutElement = function () {
-			var fillOutElement = gj('div.FillOutElement');
-			if (fillOutElement) {
-			  fillOutElement.css("height", "0px");
-			  fillOutElement.css("width", "0px");
-			}
-		}
-
-		/**
-		 * function: adjustFillOutElement
-		 * purpose : adjust a invisible element which make the left container and right container 
-		 *           equal in height.
-		 */
-		ECMUtils.prototype.adjustFillOutElement = function () {
-			var checkMinHeight = eXo.ecm.ECMUtils.initWithoutLeftContainer();
-			var workingArea = document.getElementById('UIWorkingArea');
-			var leftContainer = gj(workingArea).find("div.leftContainer:first")[0];
-			checkMinHeight = checkMinHeight || !leftContainer;
-			if (checkMinHeight) {
-				gj("div.UIDocumentInfo").css("min-height", "500px");
-			} else {
-				if (gj(leftContainer).css("display")=="none") {
-					gj("div.UIDocumentInfo").css("min-height", "500px");
-				}else { 
-					gj("div.UIDocumentInfo").css("min-height", "");
-					var rightContainer = gj(workingArea).find("div.rightContainer:first")[0];
-					if (rightContainer.offsetHeight < leftContainer.offsetHeight) {
-						var fillOutElement = gj('div.FillOutElement');
-						if (fillOutElement) {
-							if (leftContainer.offsetHeight - rightContainer.offsetHeight>0){
-								fillOutElement.css("height", leftContainer.offsetHeight - rightContainer.offsetHeight + "px");
-							} else {
-								fillOutElement.css("width", "0px");
-							}
-						}
-					}
-				}
-			}
 		}
 
 		ECMUtils.prototype.disableAutocomplete = function (id) {
@@ -1453,18 +1368,6 @@
 	ECMUtils.prototype.ajaxRedirect = function(url) {
 		url =	url.replace(/&amp;/g, "&") ;
 		window.location.href = url ;
-	};
-
-	ECMUtils.prototype.onLoadUIAddressBar = function() {
-		// 
-		var uiAddressBar = gj("#UIAddressBar");
-		if (uiAddressBar) {
-			var detailViewIcon = gj(uiAddressBar).find('td.detailViewIcon');
-			if (detailViewIcon) {
-				var detailViewBtnGroup = gj(detailViewIcon).find('div.btn-group');
-				gj(detailViewIcon).width(gj(detailViewBtnGroup).width());
-			}
-		}
 	};
 
         ECMUtils.prototype.initTagsTypeAhead = function(tags) {

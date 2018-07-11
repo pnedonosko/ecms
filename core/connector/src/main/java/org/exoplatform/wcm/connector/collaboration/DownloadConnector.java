@@ -1,6 +1,7 @@
 package org.exoplatform.wcm.connector.collaboration;
 
 import java.io.InputStream;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 import javax.jcr.AccessDeniedException;
@@ -43,7 +44,7 @@ public class DownloadConnector implements ResourceContainer{
    * @anchor DownloadConnector.download
    */
   @GET
-  @Path("/download/{workspace}/{path:.*}/")
+  @Path("/download/{workspace}/{path:.*}")
   public Response download(@PathParam("workspace") String workspace,
                            @PathParam("path") String path,
                            @QueryParam("version") String version) throws Exception {
@@ -79,7 +80,7 @@ public class DownloadConnector implements ResourceContainer{
     } catch (AccessDeniedException ade) {
       return Response.status(HTTPStatus.UNAUTHORIZED).build();
     }
-    if (node.isNodeType("nt:file")) {
+    if (node.isNodeType("nt:file") || (node.isNodeType("nt:frozenNode")) && node.getProperty("jcr:frozenPrimaryType").getValue().getString().equals("nt:file")) {
       mimeType = node.getNode("jcr:content").getProperty("jcr:mimeType").getString();
     }
     return Response.ok(is, mimeType)

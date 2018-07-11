@@ -39,9 +39,11 @@ if (uiParent != null) {
   
   PortalRequestContext portalRequestContext = Util.getPortalRequestContext();
   def lang = portalRequestContext.getLocale().getLanguage();
+  def jsManager = rqcontext.getJavascriptManager();
+  jsManager.require("SHARED/ecm-utils", "utils")
+    .addScripts("eXo.ecm.ECMUtils.fixPDFViewerHeight();");
 
 if (maximumPage > 0 && maximumPage <= pdfViewerService.getMaxPages() && fileSize <= pdfViewerService.getMaxFileSize()) {
-  def jsManager = rqcontext.getJavascriptManager();
   jsManager.require("SHARED/jquery", "gj").addScripts("gj(document).ready(function() { gj(\"*[rel='tooltip']\").tooltip();});");
 %>
     <link rel="stylesheet" href="/eXoWCMResources/pdf.js/viewer.css" />
@@ -261,11 +263,11 @@ if (maximumPage > 0 && maximumPage <= pdfViewerService.getMaxPages() && fileSize
     def remoteEditClass=_documentInfos[1];
     def remoteEditTitle=_ctx.appRes(_documentInfos[0]);
 
-    def errorMessage = _ctx.appRes("File.view.label.not-viewable");
-    def pageMsg = _ctx.appRes("File.view.label.pdf-max-page");
-    pageMsg = pageMsg.replace("{0}", (String) pdfViewerService.getMaxPages());
-    def sizeMsg = _ctx.appRes("File.view.label.pdf-max-size");
-    sizeMsg = sizeMsg.replace("{0}", (String) pdfViewerService.getMaxFileSize()/(1024*1024));
+    def errorMessage = uicomponent.getResource("File.view.label.not-viewable");
+    def pageMsg = uicomponent.getResource("File.view.label.pdf-max-page");
+    pageMsg = pageMsg.replace("{0}", (String) (pdfViewerService.getMaxPages()));
+    def sizeMsg = uicomponent.getResource("File.view.label.pdf-max-size");
+    sizeMsg = sizeMsg.replace("{0}", (String) (pdfViewerService.getMaxFileSize()/(1024*1024)));
     if (maximumPage > pdfViewerService.getMaxPages()) {
       errorMessage = pageMsg;
     } else if (fileSize > pdfViewerService.getMaxFileSize()) {
@@ -273,9 +275,8 @@ if (maximumPage > 0 && maximumPage <= pdfViewerService.getMaxPages() && fileSize
     }
 
     def currentNodePath = currentNode.getSession().getWorkspace().getName()+":"+currentNode.getPath();
-    def jsManager = _ctx.getRequestContext().getJavascriptManager();
     jsManager.require("SHARED/openDocumentInOffice", "openDocumentInOffice")
-    .addScripts("eXo.ecm.OpenDocumentInOffice.updateLabel('"+currentNodePath+"');");
+    .addScripts("eXo.ecm.OpenDocumentInOffice.updateLabel('"+ org.exoplatform.ecm.utils.text.Text.escapeIllegalJcrChars(currentNodePath) +"');");
 
   %>
     <div class="uiUnEditable clearfix">
