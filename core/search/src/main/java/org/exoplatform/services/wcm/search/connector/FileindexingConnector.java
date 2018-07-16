@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
  */
 public class FileindexingConnector extends ElasticIndexingServiceConnector {
 
+  private static final long serialVersionUID = 4273947265645212730L;
+
   private static final Log LOGGER = ExoLogger.getExoLogger(FileindexingConnector.class);
 
   public static final String TYPE = "file";
@@ -71,6 +73,8 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
             .append("    \"lastUpdatedDate\" : {\"type\" : \"date\", \"format\": \"epoch_millis\"},\n")
             .append("    \"fileType\" : {\"type\" : \"keyword\"},\n")
             .append("    \"fileSize\" : {\"type\" : \"long\"},\n")
+            .append("    \"name\" : {\"type\" : \"text\", \"boost\": 2, \"analyzer\": \"letter_lowercase_asciifolding\"},\n")
+            .append("    \"title\" : {\"type\" : \"text\", \"boost\": 2, \"analyzer\": \"letter_lowercase_asciifolding\"},\n")
             .append("    \"dc:title\" : {\"type\" : \"text\"},\n")
             .append("    \"dc:creator\" : {\"type\" : \"text\"},\n")
             .append("    \"dc:subject\" : {\"type\" : \"text\"},\n")
