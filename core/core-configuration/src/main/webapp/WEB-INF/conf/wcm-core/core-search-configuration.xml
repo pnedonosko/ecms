@@ -130,44 +130,6 @@
                 </value-param>
             </init-params>
         </component-plugin>
-        <component-plugin>
-            <name>FileESSettingsMigration</name>
-            <set-method>addUpgradePlugin</set-method>
-            <type>org.exoplatform.commons.search.es.client.ElasticSettingsUpgradePlugin</type>
-            <description>Update File Index Settings in Elastic Search</description>
-            <init-params>
-                <value-param>
-                    <name>product.group.id</name>
-                    <description>The groupId of the product</description>
-                    <value>org.exoplatform.ecms</value>
-                </value-param>
-                <value-param>
-                    <name>plugin.execution.order</name>
-                    <description>The plugin execution order</description>
-                    <value>1</value>
-                </value-param>
-                <value-param>
-                    <name>plugin.upgrade.target.version</name>
-                    <description>The plugin target version</description>
-                    <value>5.1.0</value>
-                </value-param>
-                <value-param>
-                    <name>plugin.upgrade.execute.once</name>
-                    <description>Should the plugin be executed only once</description>
-                    <value>true</value>
-                </value-param>
-                <value-param>
-                    <name>plugin.upgrade.async.execution</name>
-                    <description>Should the plugin be executed asynchronously</description>
-                    <value>true</value>
-                </value-param>
-                <value-param>
-                    <name>es.connector</name>
-                    <description>ES Connector name</description>
-                    <value>file</value>
-                </value-param>
-            </init-params>
-        </component-plugin>
     </external-component-plugins>
 
     <external-component-plugins>
@@ -182,7 +144,8 @@
                     <name>constructor.params</name>
                     <property name="index_alias" value="file_alias"/>
                     <property name="index_previous" value="file"/>
-                    <property name="index_current" value="file"/>
+                    <property name="index_current" value="file_v2"/>
+                    <property name="reindexOnUpgrade" value="true"/>
                     <property name="type" value="file"/>
                 </properties-param>
             </init-params>
