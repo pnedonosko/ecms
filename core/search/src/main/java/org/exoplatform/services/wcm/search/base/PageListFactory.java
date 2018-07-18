@@ -278,7 +278,9 @@ public class PageListFactory {
         if (filter != null) {
           node = filter.filterNodeToDisplay(node);
         }
-        filteredResults.add(dataCreator.createData(node, null, searchResult));
+        if (node != null) {
+          filteredResults.add(dataCreator.createData(node, null, searchResult));
+        }
       }
     });
 
