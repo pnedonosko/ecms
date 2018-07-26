@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.exoplatform.ecm.jcr.model.Preference;
 import org.exoplatform.ecm.webui.component.explorer.UIJCRExplorer;
+import org.exoplatform.ecm.webui.component.explorer.control.filter.CanShowJCRStructureFilter;
 import org.exoplatform.ecm.webui.component.explorer.control.filter.IsNotEditingDocumentFilter;
 import org.exoplatform.ecm.webui.component.explorer.control.listener.UIActionBarActionListener;
 import org.exoplatform.webui.config.annotation.ComponentConfig;
@@ -43,7 +44,9 @@ import org.exoplatform.webui.ext.filter.UIExtensionFilters;
  )
 public class ShowJCRStructureActionComponent extends UIComponent {
 
-  private static final List<UIExtensionFilter> FILTERS = Arrays.asList(new UIExtensionFilter[]{new IsNotEditingDocumentFilter()});
+  private static final List<UIExtensionFilter> FILTERS = Arrays.asList(new UIExtensionFilter[]{
+          new CanShowJCRStructureFilter(),
+          new IsNotEditingDocumentFilter()});
 
   @UIExtensionFilters
   public List<UIExtensionFilter> getFilters() {
