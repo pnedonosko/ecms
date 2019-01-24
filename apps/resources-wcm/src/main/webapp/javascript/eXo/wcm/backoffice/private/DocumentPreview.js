@@ -44,46 +44,6 @@
             $commentList.css('max-height', commentAreaHeight - $commentAreaTitle.innerHeight() - $commentInputBox.innerHeight() - $highlightBox.innerHeight() - $actionBarCommentArea.innerHeight() - 16); //16 is padding of commentList
             $commentList.scrollTop(20000);
 
-            // Media viewer, no preview file
-            var $navigationContainer = gj(".navigationContainer", $uiDocumentPreview);
-            var $uiContentBox = gj('.uiContentBox', $navigationContainer);
-            var $video = gj('.videoContent', $uiContentBox);
-            var $flowplayerContentDetail = gj('.ContentDetail', $uiContentBox);
-            var $flowplayerPlayerContent = gj('.PlayerContent', $flowplayerContentDetail);
-            var $flowplayer = gj('object', $flowplayerPlayerContent);
-            var $flashViewer = gj('.FlashViewer', $uiContentBox);
-            var $embedFlashViewer = gj('embed', $flashViewer);
-            var $windowmediaplayer = gj('#MediaPlayer1', $uiContentBox);
-            var $embedWMP = gj('embed', $windowmediaplayer);
-
-            $navigationContainer.height(pdfDisplayAreaHeight);
-            $uiContentBox.height(pdfDisplayAreaHeight);
-            $flowplayerContentDetail.height(pdfDisplayAreaHeight);
-            $flowplayerPlayerContent.height(pdfDisplayAreaHeight - 5);
-            $flashViewer.height(pdfDisplayAreaHeight - 5);
-
-            $flowplayer.css('max-width', $uiContentBox.width() - 2);
-            $flowplayer.css('max-height', $uiContentBox.height() - 3);
-            $flowplayer.css('width', '100%');
-            $flowplayer.css('height', '100%');
-
-            $video.css('max-width', $uiContentBox.width() - 2);
-            $video.css('max-height', $uiContentBox.height() - 3);
-            $video.css('width', '100%');
-            $video.css('height', '100%');
-
-            $windowmediaplayer.css('max-width', $uiContentBox.width() - 2);
-            $windowmediaplayer.css('max-height', $uiContentBox.height() - 7);
-            $windowmediaplayer.css('width', '100%');
-            $windowmediaplayer.css('height', '100%');
-            $embedWMP.css('width', '100%');
-            $embedWMP.css('height', '100%')
-
-            $embedFlashViewer.css('max-width', $uiContentBox.width() - 2);
-            $embedFlashViewer.css('max-height', $uiContentBox.height() - 3);
-            $embedFlashViewer.css('width', '100%');
-            $embedFlashViewer.css('height', '100%');
-
             var $img = gj('a > img', $uiContentBox);
 
             if ($img.length > 0) {

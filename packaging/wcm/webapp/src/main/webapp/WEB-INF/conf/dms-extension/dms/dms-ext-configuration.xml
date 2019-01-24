@@ -1540,6 +1540,36 @@
                         <field name="component">
                             <string>org.exoplatform.ecm.webui.viewer.HTML5VideoViewer</string>
                         </field>
+                        <field name="extendedFilters">
+                            <collection type="java.util.ArrayList">
+                                <value>
+                                    <object type="org.exoplatform.webui.ext.filter.impl.FileFilter">
+                                        <field name="mimeTypes">
+                                            <collection type="java.util.ArrayList">
+                                                <value>
+                                                    <string>video/mp4</string>
+                                                </value>
+                                                <value>
+                                                    <string>video/quicktime</string> <!--mov=video/quicktime-->
+                                                </value>
+                                                <value>
+                                                    <string>audio/ogg</string>
+                                                </value>
+                                                <value>
+                                                    <string>video/webm</string>
+                                                </value>
+                                                <value>
+                                                    <string>audio/mp3</string>
+                                                </value>
+                                                <value>
+                                                    <string>audio/x-m4a</string>
+                                                </value>
+                                            </collection>
+                                        </field>
+                                    </object>
+                                </value>
+                            </collection>
+                        </field>
                     </object>
                 </object-param>
 
