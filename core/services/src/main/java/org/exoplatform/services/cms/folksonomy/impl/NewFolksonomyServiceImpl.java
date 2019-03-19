@@ -40,6 +40,8 @@ import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
 import org.apache.commons.lang.StringUtils;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.picocontainer.Startable;
 
 import org.exoplatform.container.component.ComponentPlugin;
@@ -74,11 +76,17 @@ public class NewFolksonomyServiceImpl implements NewFolksonomyService, Startable
 
   private static final String       GROUPS_ALIAS           = "groupsPath";
 
+  private static final String       NT_UNSTRUCTURED        = "nt:unstructured";
+
+  private static final String       EXO_PRIVILEGEABLE      = "exo:privilegeable";
+
   private static final String       TAG_STYLE_ALIAS        = "exoTagStylePath";
 
   private static final String       PUBLIC_TAG_NODE_PATH   = "exoPublicTagNode";
 
   private static final String       EXO_TRASH_FOLDER       = "exo:trashFolder";
+
+  private static final String       EXO_FOLKSONOMY_FOLDER       = "exo:folksonomyFolder";
 
   private static final String       EXO_HIDDENABLE         = "exo:hiddenable";
 
@@ -781,7 +789,36 @@ public class NewFolksonomyServiceImpl implements NewFolksonomyService, Startable
     SessionProvider sessionProvider = WCMCoreUtils.getSystemSessionProvider();
     Node userNode = nodeHierarchyCreator.getUserNode(sessionProvider, userName);
     String folksonomyPath = nodeHierarchyCreator.getJcrPath(USER_FOLKSONOMY_ALIAS);
-    return userNode.getNode(folksonomyPath);
+    try {
+      return userNode.getNode(folksonomyPath);
+    } catch (PathNotFoundException e) {
+      Node userFolksonomyNode = createFolksonomyFolder(userName);
+      return userFolksonomyNode;
+    }
+  }
+
+  private Node createFolksonomyFolder(String userName) throws Exception {
+    // Get default FolksonomyNode path
+    SessionProvider sessionProvider = WCMCoreUtils.getSystemSessionProvider();
+    Node userNode = nodeHierarchyCreator.getUserNode(sessionProvider, userName);
+    String userFolksonomyPath = nodeHierarchyCreator.getJcrPath(USER_FOLKSONOMY_ALIAS);
+
+    // Create FolksonomyNode path
+    Node userFolksonomyNode = userNode.addNode(userFolksonomyPath, NT_UNSTRUCTURED);
+
+    // Add Mixin types
+    userFolksonomyNode.addMixin(EXO_HIDDENABLE);
+    userFolksonomyNode.addMixin(EXO_PRIVILEGEABLE);
+    userFolksonomyNode.addMixin(EXO_FOLKSONOMY_FOLDER);
+
+
+    // Add permission
+    Map<String, String[]> permissionsMap = new HashMap<String, String[]>();
+    permissionsMap.put(userName, PermissionType.ALL);
+    ((ExtendedNode) userFolksonomyNode).setPermissions(permissionsMap);
+    userNode.save();
+
+    return userFolksonomyNode;
   }
 
   private Node getNode(String workspace, String path) throws Exception {

@@ -183,7 +183,12 @@ public class FavoriteServiceImpl implements FavoriteService {
     Node userNode =
       nodeHierarchyCreator.getUserNode(sessionProviderService.getSystemSessionProvider(null), userName);
     String favoritePath = nodeHierarchyCreator.getJcrPath(FAVORITE_ALIAS);
-    return userNode.getNode(favoritePath);
+    try {
+      return userNode.getNode(favoritePath);
+    } catch (PathNotFoundException e) {
+      Node userFavoriteNode = createFavoriteFolder(userName);
+      return userFavoriteNode;
+    }
   }
 
   private Node createFavoriteFolder(String userName) throws Exception {
@@ -203,6 +208,7 @@ public class FavoriteServiceImpl implements FavoriteService {
     Map<String, String[]> permissionsMap = new HashMap<String, String[]>();
     permissionsMap.put(userName, PermissionType.ALL);
     ((ExtendedNode)userFavoriteNode).setPermissions(permissionsMap);
+    userNode.save();
 
     return userFavoriteNode;
   }
