@@ -86,7 +86,7 @@ public class NewFolksonomyServiceImpl implements NewFolksonomyService, Startable
 
   private static final String       EXO_TRASH_FOLDER       = "exo:trashFolder";
 
-  private static final String       EXO_FOLKSONOMY_FOLDER       = "exo:folksonomyFolder";
+  private static final String       EXO_FOLKSONOMY_FOLDER  = "exo:folksonomyFolder";
 
   private static final String       EXO_HIDDENABLE         = "exo:hiddenable";
 
@@ -465,6 +465,9 @@ public class NewFolksonomyServiceImpl implements NewFolksonomyService, Startable
    */
   public List<Node> getAllPrivateTags(String userName) throws Exception {
     Node userFolksonomyNode = getUserFolksonomyFolder(userName);
+    if (userFolksonomyNode == null) {
+      return Collections.emptyList();
+    }
     return queryTagNodes(userFolksonomyNode);
   }
 
@@ -789,6 +792,9 @@ public class NewFolksonomyServiceImpl implements NewFolksonomyService, Startable
     SessionProvider sessionProvider = WCMCoreUtils.getSystemSessionProvider();
     Node userNode = nodeHierarchyCreator.getUserNode(sessionProvider, userName);
     String folksonomyPath = nodeHierarchyCreator.getJcrPath(USER_FOLKSONOMY_ALIAS);
+    if (folksonomyPath == null) {
+      return null;
+    }
     try {
       return userNode.getNode(folksonomyPath);
     } catch (PathNotFoundException e) {
