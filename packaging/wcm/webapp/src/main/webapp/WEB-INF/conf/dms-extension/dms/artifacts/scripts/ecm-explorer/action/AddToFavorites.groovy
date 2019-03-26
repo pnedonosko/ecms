@@ -65,6 +65,10 @@ public class AddToFavoriteScript implements CmsScript {
       String userID = ConversationState.getCurrent().getIdentity().getUserId();
       if(userID.equals(IdentityConstants.ANONIM) || userID.equals(IdentityConstants.SYSTEM) || (activateUser != null && activateUser.equals(IdentityConstants.SYSTEM))) return;
       ExtendedNode userNode = (ExtendedNode)nodeHierarchyCreator_.getUserNode(WCMCoreUtils.getSystemSessionProvider(), userID);
+      if (nodeHierarchyCreator_.getJcrPath(FAVORITE_ALIAS) == null){
+        LOG.debug("Favorite path is not configured. The feature 'Favorite Documents' will be ignored")
+        return;
+      }
       String favoritePath = nodeHierarchyCreator_.getJcrPath(FAVORITE_ALIAS);
       if (userNode.hasNode(favoritePath)) {
         ExtendedNode favoriteNode = (ExtendedNode)userNode.getNode(favoritePath);

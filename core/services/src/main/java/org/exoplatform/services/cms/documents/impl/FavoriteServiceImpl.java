@@ -183,15 +183,10 @@ public class FavoriteServiceImpl implements FavoriteService {
     Node userNode =
       nodeHierarchyCreator.getUserNode(sessionProviderService.getSystemSessionProvider(null), userName);
     String favoritePath = nodeHierarchyCreator.getJcrPath(FAVORITE_ALIAS);
-    if (favoritePath == null) {
+    if (favoritePath == null || !userNode.hasNode(favoritePath)) {
       return null;
     }
-    try {
-      return userNode.getNode(favoritePath);
-    } catch (PathNotFoundException e) {
-      Node userFavoriteNode = createFavoriteFolder(userName);
-      return userFavoriteNode;
-    }
+    return userNode.getNode(favoritePath);
   }
 
   private Node createFavoriteFolder(String userName) throws Exception {
