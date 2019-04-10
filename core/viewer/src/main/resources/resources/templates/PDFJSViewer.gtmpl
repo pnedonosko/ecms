@@ -46,7 +46,7 @@ if (uiParent != null) {
 if (maximumPage > 0 && maximumPage <= pdfViewerService.getMaxPages() && fileSize <= pdfViewerService.getMaxFileSize()) {
   jsManager.require("SHARED/jquery", "gj").addScripts("gj(document).ready(function() { gj(\"*[rel='tooltip']\").tooltip();});");
 %>
-    <link rel="stylesheet" href="/eXoWCMResources/pdf.js/viewer.css" />
+    <link rel="stylesheet" href="/eXoWCMResources/pdf.js/web/viewer.css" />
 
     <div id="outerContainer" class="loadingInProgress">
 
@@ -242,19 +242,14 @@ if (maximumPage > 0 && maximumPage <= pdfViewerService.getMaxPages() && fileSize
     <!-- outerContainer -->
     <div id="printContainer"></div>
 
-    <link rel="resource" type="application/l10n" href="/eXoWCMResources/pdf.js/locale/locale.properties" />
-    <script type="text/javascript" src="/eXoWCMResources/pdf.js/compatibility.js"></script>
-    <script type="text/javascript" src="/eXoWCMResources/pdf.js/l10n.js"></script>
-    <script type="text/javascript" src="/eXoWCMResources/pdf.js/pdf.js"></script>
+    <link rel="resource" type="application/l10n" href="/eXoWCMResources/pdf.js/web/locale/locale.properties" />
+    <script type="text/javascript" src="/eXoWCMResources/pdf.js/build/pdf.js"></script>
+    <script type="text/javascript" src="/eXoWCMResources/pdf.js/web/viewer.js"></script>
     <script type="text/javascript">
-    PDFJS.pdfFile = '<%=viewLink%>';
-    PDFJS.downloadLink = '<%=downloadLink%>';
     </script>
     <script type="text/javascript">
     var locale = '<%=lang%>';
     </script>
-    <script type="text/javascript" src="/eXoWCMResources/pdf.js/viewer.js"></script>
-
     
   <%
  } else {
