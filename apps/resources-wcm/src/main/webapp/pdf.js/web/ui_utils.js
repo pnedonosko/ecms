@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 const CSS_UNITS = 96.0 / 72.0;
 const DEFAULT_SCALE_VALUE = 'auto';
 const DEFAULT_SCALE = 1.0;
@@ -557,7 +556,15 @@ function isDataSchema(url) {
  *   unknown, or the protocol is unsupported.
  * @returns {string} Guessed PDF filename.
  */
-function getPDFFileNameFromURL(url, defaultFilename = 'document.pdf') {
+function getfilename() {
+  var scriptName = document.getElementById('myviewerscript');
+  return {
+      filenamepath: scriptName.getAttribute('filename')
+  };
+};
+
+let name_of_file = getfilename();
+function getPDFFileNameFromURL(url, defaultFilename = name_of_file) {
   if (typeof url !== 'string') {
     return defaultFilename;
   }
