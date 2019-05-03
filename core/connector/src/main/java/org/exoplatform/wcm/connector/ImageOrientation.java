@@ -1,4 +1,4 @@
-package org.exoplatform.wcm.connector.collaboration;
+package org.exoplatform.wcm.connector;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -13,16 +13,25 @@ import org.exoplatform.services.log.Log;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
-public class ImageInformation {
+public class ImageOrientation {
+    public static final int ORIENTATION_Basique = 1;
+    public static final int ORIENTATION_Flip_X = 2;
+    public static final int ORIENTATION_PI = 3;
+    public static final int ORIENTATION_Flip_Y= 4;
+    public static final int ORIENTATION_PI_2F_lip_X= 5;
+    public static final int ORIENTATION_PI_2_width =6;
+    public static final int ORIENTATION_PI_2_Flip=7;
+    public static final int ORIENTATION_PI_2=8;
     public final int orientation;
     public final int width;
     public final int height;
-    private static final Log LOG = ExoLogger.getLogger(ImageInformation.class.getName());
+    private static final Log LOG = ExoLogger.getLogger(ImageOrientation.class.getName());
 
-    public ImageInformation(int orientation, int width, int height) {
+    public ImageOrientation(int orientation, int width, int height) {
         this.orientation = orientation;
         this.width = width;
         this.height = height;
@@ -33,57 +42,59 @@ public class ImageInformation {
     }
 
 
-    public static ImageInformation readImageInformation(File imageFile) throws IOException, MetadataException, ImageProcessingException {
-        Metadata metadata = ImageMetadataReader.readMetadata(imageFile);
+    public static ImageOrientation readImageInformation(InputStream imageFile) throws IOException, MetadataException, ImageProcessingException {
+        Metadata metadata = ImageMetadataReader.readMetadata(new BufferedInputStream(imageFile),true);
         Directory directory = metadata.getDirectory(ExifIFD0Directory.class);
+        if (directory == null) {
+            LOG.warn("no EXIF info.");
+        }
         JpegDirectory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
-
-        int orientation = 1;
+        int orientation;
         try {
             orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-        } catch (MetadataException me) {
-            LOG.warn("Could not get orientation");
+        }  catch (MetadataException me) {
+            orientation=1;
         }
         int width = jpegDirectory.getImageWidth();
         int height = jpegDirectory.getImageHeight();
 
-        return new ImageInformation(orientation, width, height);
+        return new ImageOrientation(orientation, width, height);
     }
 
-    public static AffineTransform getExifTransformation(ImageInformation info) {
+    public static AffineTransform getExifTransformation(ImageOrientation info) {
 
         AffineTransform affineTransform = new AffineTransform();
 
         switch (info.orientation) {
-            case 1:
+            case ORIENTATION_Basique:
                 break;
-            case 2: // Flip X
+            case ORIENTATION_Flip_X: // Flip X
                 affineTransform.scale(-1.0, 1.0);
                 affineTransform.translate(-info.width, 0);
                 break;
-            case 3: // PI rotation
+            case ORIENTATION_PI: // PI rotation
                 affineTransform.translate(info.width, info.height);
                 affineTransform.rotate(Math.PI);
                 break;
-            case 4: // Flip Y
+            case ORIENTATION_Flip_Y: // Flip Y
                 affineTransform.scale(1.0, -1.0);
                 affineTransform.translate(0, -info.height);
                 break;
-            case 5: // - PI/2 and Flip X
+            case ORIENTATION_PI_2F_lip_X: // - PI/2 and Flip X
                 affineTransform.rotate(-Math.PI / 2);
                 affineTransform.scale(-1.0, 1.0);
                 break;
-            case 6: // -PI/2 and -width
+            case ORIENTATION_PI_2_width: // -PI/2 and -width
                 affineTransform.translate(info.height, 0);
                 affineTransform.rotate(Math.PI / 2);
                 break;
-            case 7: // PI/2 and Flip
+            case ORIENTATION_PI_2_Flip: // PI/2 and Flip
                 affineTransform.scale(-1.0, 1.0);
                 affineTransform.translate(-info.height, 0);
                 affineTransform.translate(0, info.width);
                 affineTransform.rotate(  3 * Math.PI / 2);
                 break;
-            case 8: // PI / 2
+            case ORIENTATION_PI_2: // PI / 2
                 affineTransform.translate(0, info.width);
                 affineTransform.rotate(  3 * Math.PI / 2);
                 break;

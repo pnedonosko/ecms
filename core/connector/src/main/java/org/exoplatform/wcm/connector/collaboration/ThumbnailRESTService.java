@@ -32,12 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 
-import com.drew.imaging.ImageMetadataReader;
-import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
-import com.drew.metadata.MetadataException;
-import com.drew.metadata.exif.ExifIFD0Directory;
-import com.drew.metadata.jpeg.JpegDirectory;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.ecm.utils.text.Text;
 import org.exoplatform.services.cms.link.LinkManager;
@@ -52,8 +46,10 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.resource.ResourceContainer;
 import org.exoplatform.services.wcm.utils.WCMCoreUtils;
+import org.exoplatform.wcm.connector.ImageOrientation;
 
-import static org.exoplatform.wcm.connector.collaboration.ImageInformation.transformImage;
+import static org.exoplatform.wcm.connector.ImageOrientation.readImageInformation;
+import static org.exoplatform.wcm.connector.ImageOrientation.transformImage;
 
 /**
  * Returns a responding data as a thumbnail image.
@@ -246,21 +242,8 @@ public class ThumbnailRESTService implements ResourceContainer {
           if (thumbnailPlugin.getMimeTypes().contains(mimeType)) {
             InputStream inputStream = content.getProperty("jcr:data").getStream();
             if (mimeType.equals("image/jpeg")){
-              Metadata metadata = ImageMetadataReader.readMetadata(new BufferedInputStream (inputStream),true);
-              Directory directory = metadata.getDirectory(ExifIFD0Directory.class);
-              if (directory == null) {
-                LOG.warn("no EXIF info.");
-              }
-              JpegDirectory jpegDirectory = metadata.getDirectory(JpegDirectory.class);
-              int orientation = 1;
-              try {
-                orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
-                if (orientation != 1) {
-                  //rotate image
-                  int w = jpegDirectory.getImageWidth();
-                  int h = jpegDirectory.getImageHeight();
-                  ImageInformation imageInformation = new ImageInformation(orientation, w, h);
-                  AffineTransform affineTransform = ImageInformation.getExifTransformation(imageInformation);
+                  ImageOrientation imageOrientation=readImageInformation(inputStream);
+                  AffineTransform affineTransform = ImageOrientation.getExifTransformation(imageOrientation);
                   BufferedImage pictureBuffer = ImageIO.read(content.getProperty("jcr:data").getStream());
                   if (pictureBuffer == null) {
                     LOG.warn("The picture buffer parsed is null.");
@@ -270,13 +253,8 @@ public class ThumbnailRESTService implements ResourceContainer {
                   ImageIO.write(pictureBuffer, "jpeg", os);
                   InputStream is = new ByteArrayInputStream(os.toByteArray());
                   inputStream = content.setProperty("jcr:data", new BufferedInputStream(is)).getStream();
-                }
-              } catch (MetadataException me) {
-                LOG.warn("Could not get orientation");
-                inputStream = content.getProperty("jcr:data").getStream();
               }
 
-            }
             return Response.ok(inputStream, "image").header(LAST_MODIFIED_PROPERTY,
                                                             dateFormat.format(new Date())).build();
           }
