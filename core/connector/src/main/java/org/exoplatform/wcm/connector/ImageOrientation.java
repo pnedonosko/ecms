@@ -37,11 +37,6 @@ public class ImageOrientation {
         this.height = height;
     }
 
-    public String toString() {
-        return String.format("%dx%d,%d", this.width, this.height, this.orientation);
-    }
-
-
     public static ImageOrientation readImageInformation(InputStream imageFile) throws IOException, MetadataException, ImageProcessingException {
         Metadata metadata = ImageMetadataReader.readMetadata(new BufferedInputStream(imageFile),true);
         Directory directory = metadata.getDirectory(ExifIFD0Directory.class);
