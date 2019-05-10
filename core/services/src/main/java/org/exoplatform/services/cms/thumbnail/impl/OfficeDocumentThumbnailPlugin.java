@@ -18,6 +18,7 @@ package org.exoplatform.services.cms.thumbnail.impl;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.util.List;
 
 import javax.imageio.ImageIO;
@@ -25,6 +26,7 @@ import javax.jcr.Node;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.CharSet;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tika.io.IOUtils;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
@@ -80,10 +82,19 @@ public class OfficeDocumentThumbnailPlugin implements ComponentPlugin, Thumbnail
 
   public BufferedImage getBufferedImage(Node contentNode, String nodePath) throws Exception {
     if(contentNode.isNodeType(NodetypeConstant.NT_RESOURCE)) contentNode = contentNode.getParent();
-    String mimeType = contentNode.getProperty("jcr:content").getString();
-    String extension = DMSMimeTypeResolver.getInstance().getExtension(mimeType);
+    String extension = null;
+    if (contentNode.hasProperty("jcr:content/jcr:mimeType")) {
+      String mimeType = contentNode.getProperty("jcr:content/jcr:mimeType").getString();
+      extension = DMSMimeTypeResolver.getInstance().getExtension(mimeType);
+    } else if(contentNode.getName().contains(".")) {
+      String fileName = contentNode.getName();
+      extension = fileName.substring(fileName.lastIndexOf('.') + 1);
+    } else {
+      extension = ".officeDocument.tmp";
+    }
     File in = File.createTempFile(name + "_tmp", "." + extension);
-    FileUtils.writeByteArrayToFile(in, contentNode.getProperty("jcr:data").getString().getBytes());
+    InputStream documentStream = contentNode.getProperty("jcr:content/jcr:data").getStream();
+    FileUtils.copyInputStreamToFile(documentStream, in);
     File out = File.createTempFile(name + "_tmp", ".jpg");
     boolean success = jodConverter_.convert(in, out,"jpg");
     if (success) {
