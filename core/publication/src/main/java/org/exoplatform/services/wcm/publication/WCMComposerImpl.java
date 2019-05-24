@@ -52,14 +52,14 @@ import org.picocontainer.Startable;
  */
 @Managed
 @NameTemplate( { @Property(key = "view", value = "portal"),
-        @Property(key = "service", value = "composer"), @Property(key = "type", value = "content") })
+    @Property(key = "service", value = "composer"), @Property(key = "type", value = "content") })
 @ManagedDescription("WCM Composer service")
 @RESTEndpoint(path = "wcmcomposerservice")
 public class WCMComposerImpl implements WCMComposer, Startable {
 
-  final static public String EXO_RESTORELOCATION = "exo:restoreLocation";
-  final static public String EXO_LANGUAGE = "exo:language";
-  final static public String LANGUAGES    = "languages";
+    final static public String EXO_RESTORELOCATION = "exo:restoreLocation";
+    final static public String EXO_LANGUAGE = "exo:language";
+    final static public String LANGUAGES    = "languages";
 
   /** The repository service. */
   private RepositoryService repositoryService;
@@ -165,10 +165,10 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
     Node node = null;
     try {
-      if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
+    if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
         sessionProvider = remoteUser == null?
-                aclSessionProviderService.getAnonymSessionProvider() :
-                aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
+                          aclSessionProviderService.getAnonymSessionProvider() :
+                          aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
       }
       node = wcmService.getReferencedContent(sessionProvider, workspace, nodeIdentifier);
     } catch (RepositoryException e) {
@@ -309,8 +309,8 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
     if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
       sessionProvider = remoteUser == null?
-              aclSessionProviderService.getAnonymSessionProvider() :
-              aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
+                        aclSessionProviderService.getAnonymSessionProvider() :
+                        aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
     }
     ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
     Session session = sessionProvider.getSession(workspace, manageableRepository);
@@ -440,7 +440,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
    * @throws Exception
    */
   private long getViewabaleContentsSize(String path, String workspace,HashMap<String, String> filters,
-                                        SessionProvider sessionProvider) throws Exception {
+                                      SessionProvider sessionProvider) throws Exception {
 
     long totalSize = (filters.get(FILTER_TOTAL)!=null)?new Long(filters.get(FILTER_TOTAL)):0;
     if (totalSize == 0) {
@@ -508,7 +508,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       // If clv view mode is live, only get nodes which has published version
       if (MODE_LIVE.equals(mode) && !"exo:taxonomyLink".equals(primaryType))
         statement.append(" AND NOT publication:currentState = 'unpublished' AND (publication:currentState IS NULL OR publication:currentState = 'published' " +
-                "OR exo:titlePublished IS NOT NULL)");
+        		"OR exo:titlePublished IS NOT NULL)");
       if (filterTemplates) statement.append(" AND " + getTemplatesSQLFilter());
       if (queryFilter!=null) {
         statement.append(queryFilter);
@@ -670,11 +670,11 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
   @Managed
   @ManagedDescription("Clean all templates in Composer")
-  public void cleanTemplates() throws Exception {
-    this.templatesFilter = null;
-    getTemplatesSQLFilter();
-    if (LOG.isDebugEnabled()) LOG.debug("WCMComposer templates have been cleaned !");
-  }
+    public void cleanTemplates() throws Exception {
+      this.templatesFilter = null;
+      getTemplatesSQLFilter();
+      if (LOG.isDebugEnabled()) LOG.debug("WCMComposer templates have been cleaned !");
+    }
 
   @Managed
   @ManagedDescription("Used Languages")
@@ -813,7 +813,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     }
     StringBuilder statement = new StringBuilder();
     statement.append("SELECT * FROM " + NodetypeConstant.EXO_SYMLINK + " WHERE (jcr:path LIKE '" + path + "/%'")
-            .append(" AND NOT jcr:path LIKE '" + path + "/%/%')");
+             .append(" AND NOT jcr:path LIKE '" + path + "/%/%')");
     updateSymlinkByQuery(workspace, statement.toString(), sessionProvider);
   }
 
@@ -845,8 +845,8 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     Session session = sessionProvider.getSession(workspace, manageableRepository);
     Node currentFolder = null;
     try {
-      Node node = (Node)session.getItem(path);
-      return node.getPrimaryNodeType().getName();
+       Node node = (Node)session.getItem(path);
+       return node.getPrimaryNodeType().getName();
     } catch(PathNotFoundException pne) {
       return null;
     }
