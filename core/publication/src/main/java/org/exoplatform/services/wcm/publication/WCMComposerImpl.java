@@ -6,7 +6,7 @@ package org.exoplatform.services.wcm.publication;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
+import java.util.stream.Collectors;
 import javax.jcr.*;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -55,7 +55,8 @@ import org.picocontainer.Startable;
 public class WCMComposerImpl implements WCMComposer, Startable {
 
     final static public String EXO_RESTORELOCATION = "exo:restoreLocation";
-
+    final static public String EXO_LANGUAGE = "exo:language";
+    final static public String LANGUAGES    = "languages";
   /** The repository service. */
   private RepositoryService repositoryService;
 
@@ -184,7 +185,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     String version = filters.get(FILTER_VERSION);
     String orderBy = filters.get(FILTER_ORDER_BY);
     String orderType = filters.get(FILTER_ORDER_TYPE);
-    String visibility = filters.get(FILTER_VISIBILITY); 
+    String visibility = filters.get(FILTER_VISIBILITY);
     String remoteUser = null;
     if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility)) {
       remoteUser = "##PUBLIC##VISIBILITY";
@@ -218,10 +219,29 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       while (nodeIterator != null && nodeIterator.hasNext()) {
         node = nodeIterator.nextNode();
         viewNode = getViewableContent(node, filters);
-        if (viewNode != null) {
+        if (viewNode != null && !nodes.contains(viewNode)) {
           nodes.add(viewNode);
         }
       }
+
+      List<Node> nodesclone = nodes.stream()
+              .collect(Collectors.toList());
+      nodes = nodes.stream().filter(nodeItem -> {
+
+        List<Node> translationNodes = null;
+        try {
+          translationNodes = getRealTranslationNodes(nodeItem);
+        } catch (Exception e) {
+          throw new RuntimeException(e.getMessage());
+        }
+        if (nodesclone.stream().anyMatch(translationNodes::contains)) {
+          return false;
+        } else {
+          return true;
+        }
+
+      }).collect(Collectors.toList());
+
     } catch (Exception e) {
       if (LOG.isWarnEnabled()) {
         LOG.warn(e.getMessage());
@@ -229,6 +249,22 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     }
 
     return nodes;
+  }
+
+  private List<Node> getRealTranslationNodes(Node node) throws Exception {
+    LinkManager linkManager = WCMCoreUtils.getService(LinkManager.class);
+    List<Node> translationNodes = new ArrayList<Node>();
+    if (node.hasNode(LANGUAGES)) {
+      Node languageNode = node.getNode(LANGUAGES);
+      NodeIterator iter = languageNode.getNodes();
+      while (iter.hasNext()) {
+        Node currNode = iter.nextNode();
+        if (currNode.isNodeType("exo:symlink")) {
+          translationNodes.add(linkManager.getTarget(currNode));
+        }
+      }
+    }
+    return translationNodes;
   }
 
   public Result getPaginatedContents(NodeLocation nodeLocation,
@@ -357,6 +393,25 @@ public class WCMComposerImpl implements WCMComposer, Startable {
           nodes.add(viewNode);
         }
       }
+
+      List<Node> nodesclone = nodes.stream()
+              .collect(Collectors.toList());
+      nodes = nodes.stream().filter(nodeItem -> {
+
+        List<Node> translationNodes = null;
+        try {
+          translationNodes = getRealTranslationNodes(nodeItem);
+        } catch (Exception e) {
+          throw new RuntimeException(e.getMessage());
+        }
+        if (nodesclone.stream().anyMatch(translationNodes::contains)) {
+          nodesclone.remove(nodeItem);
+          return false;
+        } else {
+          return true;
+        }
+
+      }).collect(Collectors.toList());
     }
 
     Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
@@ -504,7 +559,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
         viewNode = getPublishedContent(lnode, filters);
         if (viewNode!=null) {
-          return viewNode;
+          return lnode;
         }
         return null;
       }
@@ -514,7 +569,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       viewNode = getPublishedContent(node, filters);
     }
 
-    return viewNode;
+    return node;
   }
 
 
@@ -773,7 +828,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       }
     }
   }
-  
+
   private String getTypeFromPath (String workspace, String path, SessionProvider sessionProvider) throws Exception {
     ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
     Session session = sessionProvider.getSession(workspace, manageableRepository);
