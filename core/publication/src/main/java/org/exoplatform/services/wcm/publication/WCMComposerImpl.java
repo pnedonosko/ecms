@@ -224,48 +224,23 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         }
       }
 
-      List<Node> nodesclone = nodes.stream()
-              .collect(Collectors.toList());
+      List<Node> nodesclone = new ArrayList<>(nodes);
       nodes = nodes.stream().filter(nodeItem -> {
-
-        List<Node> translationNodes = null;
         try {
-          translationNodes = getRealTranslationNodes(nodeItem);
+          List<Node> translationNodes = getRealTranslationNodes(nodeItem);
+          if (translationNodes != null) {
+            return nodesclone.stream().noneMatch(translationNodes::contains);
+          }
         } catch (Exception e) {
-          LOG.error(e.getMessage());
-          throw new RuntimeException(e.getMessage());
+          LOG.warn("Error getting real translation nodes of {}", nodeItem, e);
         }
-        if (nodesclone.stream().anyMatch(translationNodes::contains)) {
-          return false;
-        } else {
-          return true;
-        }
-
+        return false;
       }).collect(Collectors.toList());
-
     } catch (Exception e) {
-      if (LOG.isWarnEnabled()) {
-        LOG.warn(e.getMessage());
-      }
+      LOG.warn("Error getting contents of folder {}:{}", workspace, path, e);
     }
 
     return nodes;
-  }
-
-  private List<Node> getRealTranslationNodes(Node node) throws Exception {
-    LinkManager linkManager = WCMCoreUtils.getService(LinkManager.class);
-    List<Node> translationNodes = new ArrayList<Node>();
-    if (node.hasNode(LANGUAGES)) {
-      Node languageNode = node.getNode(LANGUAGES);
-      NodeIterator iter = languageNode.getNodes();
-      while (iter.hasNext()) {
-        Node currNode = iter.nextNode();
-        if (currNode.isNodeType("exo:symlink")) {
-          translationNodes.add(linkManager.getTarget(currNode));
-        }
-      }
-    }
-    return translationNodes;
   }
 
   public Result getPaginatedContents(NodeLocation nodeLocation,
@@ -361,9 +336,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       nodes.add(taxonomyNodes.get((int)i));
     }
 
-    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
-    return result;
-
+    return new Result(nodes, offset, totalSize, nodeLocation, filters);
   }
 
   /**
@@ -379,13 +352,14 @@ public class WCMComposerImpl implements WCMComposer, Startable {
   private Result getPaginatedNodesContent(NodeLocation nodeLocation, String workspace,
                                           HashMap<String, String> filters,
                                           SessionProvider sessionProvider) throws Exception{
-    List<Node> nodes = new ArrayList<Node>();
+    List<Node> nodes = new ArrayList<>();
     long totalSize;
     long offset = (filters.get(FILTER_OFFSET)!=null)?new Long(filters.get(FILTER_OFFSET)):0;
     String path = nodeLocation.getPath();
     totalSize = getViewabaleContentsSize(path, workspace, filters, sessionProvider);
     NodeIterator nodeIterator = getViewableContents(workspace, path, filters, sessionProvider, true);
-    Node node = null, viewNode = null;
+    Node node = null;
+    Node viewNode = null;
     if (nodeIterator != null) {
       while (nodeIterator.hasNext()) {
         node = nodeIterator.nextNode();
@@ -395,30 +369,20 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         }
       }
 
-      List<Node> nodesclone = nodes.stream()
-              .collect(Collectors.toList());
+      List<Node> nodesClone = new ArrayList<>(nodes);
       nodes = nodes.stream().filter(nodeItem -> {
-
-        List<Node> translationNodes = null;
         try {
-          translationNodes = getRealTranslationNodes(nodeItem);
+          List<Node> translationNodes = getRealTranslationNodes(nodeItem);
+          if (translationNodes != null) {
+            return nodesClone.stream().noneMatch(translationNodes::contains);
+          }
         } catch (Exception e) {
-          LOG.error(e.getMessage());
-          throw new RuntimeException(e.getMessage());
+          LOG.warn("Error getting real translation nodes of {}", nodeItem, e);
         }
-        if (nodesclone.stream().anyMatch(translationNodes::contains)) {
-          nodesclone.remove(nodeItem);
-          return false;
-        } else {
-          return true;
-        }
-
+        return false;
       }).collect(Collectors.toList());
     }
-
-    Result result = new Result(nodes, offset, totalSize, nodeLocation, filters);
-    return result;
-
+    return new Result(nodes, offset, totalSize, nodeLocation, filters);
   }
 
   /**
@@ -842,4 +806,20 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       return null;
     }
   }
+
+  private List<Node> getRealTranslationNodes(Node node) throws Exception {
+    List<Node> translationNodes = new ArrayList<>();
+    if (node.hasNode(LANGUAGES)) {
+      Node languageNode = node.getNode(LANGUAGES);
+      NodeIterator iter = languageNode.getNodes();
+      while (iter.hasNext()) {
+        Node currNode = iter.nextNode();
+        if (currNode.isNodeType("exo:symlink") && currNode.hasProperty(EXO_LANGUAGE)) {
+          translationNodes.add(linkManager.getTarget(currNode));
+        }
+      }
+    }
+    return translationNodes;
+  }
+
 }
