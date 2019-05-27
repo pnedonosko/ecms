@@ -232,6 +232,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         try {
           translationNodes = getRealTranslationNodes(nodeItem);
         } catch (Exception e) {
+          LOG.error(e.getMessage());
           throw new RuntimeException(e.getMessage());
         }
         if (nodesclone.stream().anyMatch(translationNodes::contains)) {
@@ -402,6 +403,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         try {
           translationNodes = getRealTranslationNodes(nodeItem);
         } catch (Exception e) {
+          LOG.error(e.getMessage());
           throw new RuntimeException(e.getMessage());
         }
         if (nodesclone.stream().anyMatch(translationNodes::contains)) {
