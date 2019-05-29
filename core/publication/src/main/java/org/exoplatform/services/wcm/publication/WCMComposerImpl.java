@@ -423,7 +423,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
    * org.exoplatform.services.wcm.publication.WCMComposer#getContents(java.lang
    * .String, java.lang.String, java.lang.String, java.util.HashMap)
    */
-  private NodeIterator getViewableContents(String workspace,
+  public NodeIterator getViewableContents(String workspace,
                                            String path,
                                            HashMap<String, String> filters,
                                            SessionProvider sessionProvider, boolean paginated) throws Exception {
