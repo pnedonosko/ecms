@@ -49,14 +49,14 @@ import org.picocontainer.Startable;
  */
 @Managed
 @NameTemplate( { @Property(key = "view", value = "portal"),
-    @Property(key = "service", value = "composer"), @Property(key = "type", value = "content") })
+        @Property(key = "service", value = "composer"), @Property(key = "type", value = "content") })
 @ManagedDescription("WCM Composer service")
 @RESTEndpoint(path = "wcmcomposerservice")
 public class WCMComposerImpl implements WCMComposer, Startable {
 
-    final static public String EXO_RESTORELOCATION = "exo:restoreLocation";
-    final static public String EXO_LANGUAGE = "exo:language";
-    final static public String LANGUAGES    = "languages";
+  final static public String EXO_RESTORELOCATION = "exo:restoreLocation";
+  final static public String EXO_LANGUAGE = "exo:language";
+  final static public String LANGUAGES    = "languages";
   /** The repository service. */
   private RepositoryService repositoryService;
 
@@ -161,10 +161,10 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
     Node node = null;
     try {
-    if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
+      if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
         sessionProvider = remoteUser == null?
-                          aclSessionProviderService.getAnonymSessionProvider() :
-                          aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
+                aclSessionProviderService.getAnonymSessionProvider() :
+                aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
       }
       node = wcmService.getReferencedContent(sessionProvider, workspace, nodeIdentifier);
     } catch (RepositoryException e) {
@@ -229,7 +229,12 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         try {
           List<Node> translationNodes = getRealTranslationNodes(nodeItem);
           if (translationNodes != null) {
-            return nodesclone.stream().noneMatch(translationNodes::contains);
+            if(nodesclone.stream().anyMatch(translationNodes::contains)){
+              nodesclone.remove(nodeItem);
+              return false;
+            }else {
+              return true;
+            }
           }
         } catch (Exception e) {
           LOG.warn("Error getting real translation nodes of {}", nodeItem, e);
@@ -273,8 +278,8 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
     if (WCMComposer.VISIBILITY_PUBLIC.equals(visibility) && MODE_LIVE.equals(mode)) {
       sessionProvider = remoteUser == null?
-                        aclSessionProviderService.getAnonymSessionProvider() :
-                        aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
+              aclSessionProviderService.getAnonymSessionProvider() :
+              aclSessionProviderService.getACLSessionProvider(getAnyUserACL());
     }
     ManageableRepository manageableRepository = repositoryService.getCurrentRepository();
     Session session = sessionProvider.getSession(workspace, manageableRepository);
@@ -368,17 +373,22 @@ public class WCMComposerImpl implements WCMComposer, Startable {
           nodes.add(viewNode);
         }
       }
-
       List<Node> nodesClone = new ArrayList<>(nodes);
       nodes = nodes.stream().filter(nodeItem -> {
         try {
           List<Node> translationNodes = getRealTranslationNodes(nodeItem);
-          if (translationNodes != null) {
-            return nodesClone.stream().noneMatch(translationNodes::contains);
+          if (translationNodes.size() > 0) {
+            if(nodesClone.stream().anyMatch(translationNodes::contains)){
+              nodesClone.remove(nodeItem);
+              return false;
+            }else {
+              return true;
+            }
           }
         } catch (Exception e) {
           LOG.warn("Error getting real translation nodes of {}", nodeItem, e);
         }
+        System.out.println("nodes last false ");
         return false;
       }).collect(Collectors.toList());
     }
@@ -395,7 +405,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
    * @throws Exception
    */
   private long getViewabaleContentsSize(String path, String workspace,HashMap<String, String> filters,
-                                      SessionProvider sessionProvider) throws Exception {
+                                        SessionProvider sessionProvider) throws Exception {
 
     long totalSize = (filters.get(FILTER_TOTAL)!=null)?new Long(filters.get(FILTER_TOTAL)):0;
     if (totalSize == 0) {
@@ -413,7 +423,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
    * org.exoplatform.services.wcm.publication.WCMComposer#getContents(java.lang
    * .String, java.lang.String, java.lang.String, java.util.HashMap)
    */
-  private NodeIterator getViewableContents(String workspace,
+  public NodeIterator getViewableContents(String workspace,
                                            String path,
                                            HashMap<String, String> filters,
                                            SessionProvider sessionProvider, boolean paginated) throws Exception {
@@ -463,7 +473,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       // If clv view mode is live, only get nodes which has published version
       if (MODE_LIVE.equals(mode) && !"exo:taxonomyLink".equals(primaryType))
         statement.append(" AND NOT publication:currentState = 'unpublished' AND (publication:currentState IS NULL OR publication:currentState = 'published' " +
-        		"OR exo:titlePublished IS NOT NULL)");
+                "OR exo:titlePublished IS NOT NULL)");
       if (filterTemplates) statement.append(" AND " + getTemplatesSQLFilter());
       if (queryFilter!=null) {
         statement.append(queryFilter);
@@ -625,11 +635,11 @@ public class WCMComposerImpl implements WCMComposer, Startable {
 
   @Managed
   @ManagedDescription("Clean all templates in Composer")
-    public void cleanTemplates() throws Exception {
-      this.templatesFilter = null;
-      getTemplatesSQLFilter();
-      if (LOG.isDebugEnabled()) LOG.debug("WCMComposer templates have been cleaned !");
-    }
+  public void cleanTemplates() throws Exception {
+    this.templatesFilter = null;
+    getTemplatesSQLFilter();
+    if (LOG.isDebugEnabled()) LOG.debug("WCMComposer templates have been cleaned !");
+  }
 
   @Managed
   @ManagedDescription("Used Languages")
@@ -768,7 +778,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     }
     StringBuilder statement = new StringBuilder();
     statement.append("SELECT * FROM " + NodetypeConstant.EXO_SYMLINK + " WHERE (jcr:path LIKE '" + path + "/%'")
-             .append(" AND NOT jcr:path LIKE '" + path + "/%/%')");
+            .append(" AND NOT jcr:path LIKE '" + path + "/%/%')");
     updateSymlinkByQuery(workspace, statement.toString(), sessionProvider);
   }
 
@@ -800,21 +810,22 @@ public class WCMComposerImpl implements WCMComposer, Startable {
     Session session = sessionProvider.getSession(workspace, manageableRepository);
     Node currentFolder = null;
     try {
-       Node node = (Node)session.getItem(path);
-       return node.getPrimaryNodeType().getName();
+      Node node = (Node)session.getItem(path);
+      return node.getPrimaryNodeType().getName();
     } catch(PathNotFoundException pne) {
       return null;
     }
   }
 
-  private List<Node> getRealTranslationNodes(Node node) throws Exception {
-    List<Node> translationNodes = new ArrayList<>();
-    if (node.hasNode(LANGUAGES)) {
-      Node languageNode = node.getNode(LANGUAGES);
-      NodeIterator iter = languageNode.getNodes();
-      while (iter.hasNext()) {
+  public List<Node> getRealTranslationNodes(Node node) throws Exception {
+    LinkManager linkManager = WCMCoreUtils.getService(LinkManager.class);
+    List<Node> translationNodes = new ArrayList<Node>();
+    if(node.hasNode(LANGUAGES)){
+      Node languageNode = node.getNode(LANGUAGES) ;
+      NodeIterator iter  = languageNode.getNodes() ;
+      while(iter.hasNext()) {
         Node currNode = iter.nextNode();
-        if (currNode.isNodeType("exo:symlink") && currNode.hasProperty(EXO_LANGUAGE)) {
+        if (currNode.isNodeType("exo:symlink")) {
           translationNodes.add(linkManager.getTarget(currNode));
         }
       }
