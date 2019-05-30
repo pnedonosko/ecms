@@ -136,14 +136,22 @@ public class TestWCMComposer extends BasePublicationTestCase {
 		// Then
 		assertEquals(2, result.getNumTotal());
 	}
-
-  public void testgetPaginatedContentsShouldRemoveDuplicatedNodes() throws Exception {
+	
+  /*
+   * this test verifies that getPaginationContents method should remove duplicated
+   * files if translation exists
+   */
+  public void testGetPaginatedContents() throws Exception {
     populateMultiLangContent();
     Result result = wcmComposerImplSpy.getPaginatedContents(nodeLocation, filters, sessionProvider);
     assertEquals(1, result.getNodes().size());
   }
 
-  public void testgetContentsShouldRemoveDuplicatedNodes() throws Exception {
+  /*
+   * this test verifies that getContents method should remove duplicated files if
+   * translation exists
+   */
+  public void testGetContents() throws Exception {
     populateMultiLangContent();
     List<Node> nodes = wcmComposerImplSpy.getContents(workspace, folderPath, filters, sessionProvider);
     assertEquals(1, nodes.size());
