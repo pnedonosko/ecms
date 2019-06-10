@@ -24,11 +24,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
   WCMComposer               wcmComposer = null;
 
   PublicationService        publicationService;
-
-  WCMComposerImpl           wcmComposerService;
-
-  WCMComposerImpl           wcmComposerImplSpy;
-
+  
   String                    workspace;
 
   String                    folderPath;
@@ -43,7 +39,6 @@ public class TestWCMComposer extends BasePublicationTestCase {
     super.setUp();
     wcmComposer = container.getComponentInstanceOfType(WCMComposer.class);
     publicationService = WCMCoreUtils.getService(PublicationService.class);
-    wcmComposerService = WCMCoreUtils.getService(WCMComposerImpl.class);
     plugin_ = new DumpPublicationPlugin();
     plugin_.setName("Simple");
     plugin_.setDescription("Simple");
@@ -142,7 +137,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
    * files if translation exists
    */
   public void testGetPaginatedContents() throws Exception {
-    populateMultiLangContent();
+    WCMComposer wcmComposerImplSpy =   populateMultiLangContent();
     Result result = wcmComposerImplSpy.getPaginatedContents(nodeLocation, filters, sessionProvider);
     assertEquals(1, result.getNodes().size());
   }
@@ -152,12 +147,12 @@ public class TestWCMComposer extends BasePublicationTestCase {
    * translation exists
    */
   public void testGetContents() throws Exception {
-    populateMultiLangContent();
+    WCMComposer wcmComposerImplSpy =   populateMultiLangContent();
     List<Node> nodes = wcmComposerImplSpy.getContents(workspace, folderPath, filters, sessionProvider);
     assertEquals(1, nodes.size());
   }
   
-  public void populateMultiLangContent() throws Exception {
+  public WCMComposer populateMultiLangContent() throws Exception {
     HashMap<String, String> context = new HashMap<String, String>();
     context.put("visibility", "true");
 
@@ -179,7 +174,8 @@ public class TestWCMComposer extends BasePublicationTestCase {
     publicationService.enrollNodeInLifecycle(nodeone_fr, plugin_.getLifecycleName());
     publicationService.changeState(nodeone_fr, PUBLISHED, context);
     NodeIterator iter = rootNode.getNodes();
-    wcmComposerImplSpy = Mockito.spy(wcmComposerService);
+    WCMComposerImpl wcmComposerImpl = WCMCoreUtils.getService(WCMComposerImpl.class); ;
+    WCMComposerImpl wcmComposerImplSpy = Mockito.spy(wcmComposerImpl);
     int i = 0;
     while (i < 5) {
       iter.next();
@@ -206,6 +202,8 @@ public class TestWCMComposer extends BasePublicationTestCase {
                                 Mockito.any(Boolean.class));
     Mockito.doReturn(l1).when(wcmComposerImplSpy).getRealTranslationNodes(nodeone_en);
     Mockito.doReturn(l2).when(wcmComposerImplSpy).getRealTranslationNodes(nodeone_fr);
+    
+    return wcmComposerImplSpy;
   }
 
   public void tearDown() throws Exception {
