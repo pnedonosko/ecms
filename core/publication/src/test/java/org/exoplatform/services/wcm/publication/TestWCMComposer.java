@@ -33,6 +33,10 @@ public class TestWCMComposer extends BasePublicationTestCase {
 
   private PublicationPlugin plugin_;
 
+  Node                      nodeone_en;
+
+  Node                      nodeone_fr;
+
   public void setUp() throws Exception {
     super.setUp();
     wcmComposer = container.getComponentInstanceOfType(WCMComposer.class);
@@ -126,24 +130,28 @@ public class TestWCMComposer extends BasePublicationTestCase {
 	}
 
   /*
-   * this test verifies that getPaginationContents method should remove duplicated
-   * files if translation exists
-   */
-  public void testGetPaginatedContents() throws Exception {
-    WCMComposer wcmComposerImplSpy = populateMultiLangContent();
-    Result result = wcmComposerImplSpy.getPaginatedContents(nodeLocation, filters, sessionProvider);
-    assertEquals(1, result.getNodes().size());
-  }
-
-  /*
    * this test verifies that getContents method should remove duplicated files if
    * translation exists
    */
   public void testGetContents() throws Exception {
     WCMComposer wcmComposerImplSpy = populateMultiLangContent();
     List<Node> nodes = wcmComposerImplSpy.getContents(workspace, folderPath, filters, sessionProvider);
-    assertEquals(1, nodes.size());
+    assertTrue(nodes.contains(nodeone_fr));
+    assertFalse(nodes.contains(nodeone_en));
   }
+
+  /*
+   * this test verifies that getPaginationContents method should remove duplicated
+   * files if translation exists
+   */
+  public void testGetPaginatedContents() throws Exception {
+    WCMComposer wcmComposerImplSpy = populateMultiLangContent();
+    Result result = wcmComposerImplSpy.getPaginatedContents(nodeLocation, filters, sessionProvider);
+    assertTrue(result.getNodes().contains(nodeone_fr));
+    assertFalse(result.getNodes().contains(nodeone_en));
+  }
+
+
 
   public WCMComposer populateMultiLangContent() throws Exception {
     PublicationService publicationService = WCMCoreUtils.getService(PublicationService.class);
@@ -160,13 +168,13 @@ public class TestWCMComposer extends BasePublicationTestCase {
     workspace = nodeLocation.getWorkspace();
     Node rootNode = session.getRootNode();// getNode("/sites content/live");
 
-    Node nodeone_en = rootNode.addNode("nodeone_en", NodetypeConstant.EXO_WEBCONTENT);
+    nodeone_en = rootNode.addNode("nodeone_en", NodetypeConstant.EXO_WEBCONTENT);
     nodeone_en.setProperty(NodetypeConstant.EXO_LANGUAGE, "en");
     nodeone_en.setProperty(NodetypeConstant.EXO_TITLE, "node one en");
     publicationService.enrollNodeInLifecycle(nodeone_en, plugin_.getLifecycleName());
     publicationService.changeState(nodeone_en, PUBLISHED, context);
 
-    Node nodeone_fr = rootNode.addNode("nodeone_fr", NodetypeConstant.EXO_WEBCONTENT);
+    nodeone_fr = rootNode.addNode("nodeone_fr", NodetypeConstant.EXO_WEBCONTENT);
     nodeone_fr.setProperty(NodetypeConstant.EXO_LANGUAGE, "fr");
     nodeone_fr.setProperty(NodetypeConstant.EXO_TITLE, "node one fr");
     publicationService.enrollNodeInLifecycle(nodeone_fr, plugin_.getLifecycleName());
