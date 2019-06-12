@@ -225,6 +225,8 @@ public class WCMComposerImpl implements WCMComposer, Startable {
       }
 
       List<Node> nodesclone = new ArrayList<>(nodes);
+      /**
+       * Search the translations nodes and remove the duplication.**/
       nodes = nodes.stream().filter(nodeItem -> {
         try {
           List<Node> translationNodes = getRealTranslationNodes(nodeItem);
@@ -388,7 +390,6 @@ public class WCMComposerImpl implements WCMComposer, Startable {
         } catch (Exception e) {
           LOG.warn("Error getting real translation nodes of {}", nodeItem, e);
         }
-        System.out.println("nodes last false ");
         return false;
       }).collect(Collectors.toList());
     }

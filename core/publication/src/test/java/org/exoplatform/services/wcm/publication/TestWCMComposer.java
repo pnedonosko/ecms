@@ -21,7 +21,7 @@ import static org.exoplatform.services.wcm.publication.WCMComposer.*;
 
 public class TestWCMComposer extends BasePublicationTestCase {
 
-  WCMComposer               wcmComposer = null;
+  WCMComposerImpl           wcmComposer = null;
   
   String                    workspace;
 
@@ -39,7 +39,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
 
   public void setUp() throws Exception {
     super.setUp();
-    wcmComposer = container.getComponentInstanceOfType(WCMComposer.class);
+    wcmComposer = WCMCoreUtils.getService(WCMComposerImpl.class);
     applySystemSession();
   }
 
@@ -180,25 +180,13 @@ public class TestWCMComposer extends BasePublicationTestCase {
     publicationService.enrollNodeInLifecycle(nodeone_fr, plugin_.getLifecycleName());
     publicationService.changeState(nodeone_fr, PUBLISHED, context);
     NodeIterator iter = rootNode.getNodes();
-    WCMComposerImpl wcmComposerImpl = WCMCoreUtils.getService(WCMComposerImpl.class);
-    ;
-    WCMComposerImpl wcmComposerImplSpy = Mockito.spy(wcmComposerImpl);
-    int i = 0;
-    while (i < 5) {
-      iter.next();
-      i++;
-    }
-    List<Node> l1 = new ArrayList<Node>() {
-      {
-        add(nodeone_fr);
-      }
-    };
+    WCMComposerImpl wcmComposerImplSpy = Mockito.spy(wcmComposer);
+    List<Node> l1 = new ArrayList<Node>();
+    l1.add(nodeone_fr);
+    
 
-    List<Node> l2 = new ArrayList<Node>() {
-      {
-        add(nodeone_en);
-      }
-    };
+    List<Node> l2 = new ArrayList<Node>();
+    l2.add(nodeone_en);
 
     Mockito.doReturn(iter)
            .when(wcmComposerImplSpy)
