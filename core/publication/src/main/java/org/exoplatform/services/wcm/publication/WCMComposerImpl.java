@@ -91,9 +91,7 @@ public class WCMComposerImpl implements WCMComposer, Startable {
   private List<String> usedPrimaryTypes;
   /** shared group membership */
   private String sharedGroup;
-
-
-
+  
   public List<Node> getRealTranslationNodes(Node node) throws Exception {
     LinkManager linkManager = WCMCoreUtils.getService(LinkManager.class);
     List<Node> translationNodes = new ArrayList<Node>();

@@ -134,7 +134,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
    * translation exists
    */
   public void testGetContents() throws Exception {
-    WCMComposer wcmComposerImplSpy = populateMultiLangContent();
+    WCMComposer wcmComposerImplSpy = populateMultiLangContent(false);
     List<Node> nodes = wcmComposerImplSpy.getContents(workspace, folderPath, filters, sessionProvider);
     assertTrue(nodes.contains(nodeone_fr));
     assertFalse(nodes.contains(nodeone_en));
@@ -145,15 +145,13 @@ public class TestWCMComposer extends BasePublicationTestCase {
    * files if translation exists
    */
   public void testGetPaginatedContents() throws Exception {
-    WCMComposer wcmComposerImplSpy = populateMultiLangContent();
+    WCMComposer wcmComposerImplSpy = populateMultiLangContent(true);
     Result result = wcmComposerImplSpy.getPaginatedContents(nodeLocation, filters, sessionProvider);
     assertTrue(result.getNodes().contains(nodeone_fr));
     assertFalse(result.getNodes().contains(nodeone_en));
   }
-
-
-
-  public WCMComposer populateMultiLangContent() throws Exception {
+  
+  public WCMComposer populateMultiLangContent(Boolean paginated) throws Exception {
     PublicationService publicationService = WCMCoreUtils.getService(PublicationService.class);
     plugin_ = new DumpPublicationPlugin();
     plugin_.setName("Simple");
@@ -166,7 +164,7 @@ public class TestWCMComposer extends BasePublicationTestCase {
     folderPath = "repository:collaboration:/sites content/live";
     nodeLocation = NodeLocation.getNodeLocationByExpression(folderPath);
     workspace = nodeLocation.getWorkspace();
-    Node rootNode = session.getRootNode();// getNode("/sites content/live");
+    Node rootNode = session.getRootNode();
 
     nodeone_en = rootNode.addNode("nodeone_en", NodetypeConstant.EXO_WEBCONTENT);
     nodeone_en.setProperty(NodetypeConstant.EXO_LANGUAGE, "en");
@@ -181,20 +179,19 @@ public class TestWCMComposer extends BasePublicationTestCase {
     publicationService.changeState(nodeone_fr, PUBLISHED, context);
     NodeIterator iter = rootNode.getNodes();
     WCMComposerImpl wcmComposerImplSpy = Mockito.spy(wcmComposer);
+    if (paginated) {
+      folderPath = nodeLocation.getPath();
+      workspace = nodeLocation.getWorkspace();
+    }
     List<Node> l1 = new ArrayList<Node>();
     l1.add(nodeone_fr);
-    
 
     List<Node> l2 = new ArrayList<Node>();
     l2.add(nodeone_en);
 
     Mockito.doReturn(iter)
            .when(wcmComposerImplSpy)
-           .getViewableContents(Mockito.any(String.class),
-                                Mockito.any(String.class),
-                                Mockito.any(HashMap.class),
-                                Mockito.any(SessionProvider.class),
-                                Mockito.any(Boolean.class));
+           .getViewableContents(workspace, folderPath, filters, sessionProvider, paginated);
     Mockito.doReturn(l1).when(wcmComposerImplSpy).getRealTranslationNodes(nodeone_en);
     Mockito.doReturn(l2).when(wcmComposerImplSpy).getRealTranslationNodes(nodeone_fr);
 
