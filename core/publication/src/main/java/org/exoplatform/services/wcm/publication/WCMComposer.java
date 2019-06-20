@@ -101,7 +101,9 @@ public interface WCMComposer {
 
   /** The constant VISIBILITY USER. */
   public final static String VISIBILITY_USER = "user";
-
+  
+  /** The default language of the user.*/
+  final static public String DEFAULT_LANGUAGE    = "defaultLanguages";
   /**
    * Gets a content node at a specified path based on given filters.
    *

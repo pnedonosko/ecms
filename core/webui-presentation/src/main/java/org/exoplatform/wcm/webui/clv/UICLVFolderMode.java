@@ -101,10 +101,12 @@ public class UICLVFolderMode extends UICLVContainer {
    * @throws Exception the exception
    */
   public Result getRenderedContentNodes() throws Exception {
+    String lang = Util.getPortalRequestContext().getLocale().getLanguage();
     PortletRequestContext portletRequestContext = WebuiRequestContext.getCurrentInstance();
     PortletPreferences preferences = portletRequestContext.getRequest().getPreferences();
     WCMComposer wcmComposer = getApplicationComponent(WCMComposer.class);
     HashMap<String, String> filters = new HashMap<String, String>();
+    filters.put(WCMComposer.DEFAULT_LANGUAGE,lang);
     filters.put(WCMComposer.FILTER_MODE, Utils.getCurrentMode());
     String orderBy = preferences.getValue(UICLVPortlet.PREFERENCE_ORDER_BY, null);
     String orderType = preferences.getValue(UICLVPortlet.PREFERENCE_ORDER_TYPE, null);
@@ -113,6 +115,7 @@ public class UICLVFolderMode extends UICLVContainer {
     String contextualMode = preferences.getValue(UICLVPortlet.PREFERENCE_CONTEXTUAL_FOLDER, "true");
     String workspace = preferences.getValue(UICLVPortlet.PREFERENCE_WORKSPACE, null);
     String query = preferences.getValue(UICLVPortlet.PREFERENCE_CONTENTS_BY_QUERY, null);
+    
     if (orderType == null) orderType = "DESC";
     if (orderBy == null) orderBy = "exo:title";
     filters.put(WCMComposer.FILTER_ORDER_BY, orderBy);

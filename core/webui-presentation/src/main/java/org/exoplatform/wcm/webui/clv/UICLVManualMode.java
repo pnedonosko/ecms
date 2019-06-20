@@ -80,8 +80,9 @@ public class UICLVManualMode extends UICLVContainer {
     String workspace = portletPreferences.getValue(UICLVPortlet.PREFERENCE_WORKSPACE, null);
     List<Node> nodes = new ArrayList<Node>();
     String folderPath="";
-
+    String lang = Util.getPortalRequestContext().getLocale().getLanguage();
     HashMap<String, String> filters = new HashMap<String, String>();
+    filters.put(WCMComposer.DEFAULT_LANGUAGE,lang);
     if (UICLVPortlet.PREFERENCE_CONTEXTUAL_FOLDER_ENABLE.equals(contextualMode)) {
       String folderParamName = portletPreferences.getValue(UICLVPortlet.PREFERENCE_SHOW_CLV_BY, null);
       if (folderParamName == null || folderParamName.length() == 0)
