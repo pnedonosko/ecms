@@ -273,6 +273,12 @@ public class UIAddressBar extends UIForm {
       }else {
         queryStatement = StringUtils.replace(SQL_QUERY,"$0",currentNode.getPath());
       }
+      if (text.startsWith("\"")) {
+        text = text.substring(1);
+      }
+      if (text.endsWith("\"")) {
+        text = text.substring(0, text.length() - 1);
+      }
       String escapedText = org.exoplatform.services.cms.impl.Utils.escapeIllegalCharacterInQuery(text);
       queryStatement = StringUtils.replace(queryStatement,"$1", escapedText);
       queryStatement = StringUtils.replace(queryStatement,"$2", escapedText.toLowerCase());
