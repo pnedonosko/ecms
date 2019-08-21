@@ -141,6 +141,7 @@
     <label>
       <readmore>قراءة المزيد</readmore>
       <rssFeed>تدفــّـق آر إس إس RSS</rssFeed>
+      <postedBy>نشر من طرف</postedBy>
     </label>
     <action>
       <refresh>تحديث</refresh>

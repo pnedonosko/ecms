@@ -141,6 +141,7 @@
     <label>
       <readmore>Read more</readmore>
       <rssFeed>RSS Feed</rssFeed>
+      <postedBy>Posted by</postedBy>
     </label>
     <action>
       <refresh>Refresh</refresh>
