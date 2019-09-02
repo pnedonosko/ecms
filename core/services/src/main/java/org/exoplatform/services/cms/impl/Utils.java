@@ -641,7 +641,9 @@ public class Utils {
    */
   public static String cleanString(String str) {
     Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
-    str = accentsconverter.transliterate(str);
+    if (!textContainsArabic(str)) {
+      str = accentsconverter.transliterate(str);
+    }
     //the character ? seems to not be changed to d by the transliterate function
     StringBuffer cleanedStr = new StringBuffer(str.trim());
     // delete special character
@@ -705,12 +707,27 @@ public class Utils {
     Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
     if (fileName.indexOf('.') > 0) {
       String ext = fileName.substring(fileName.lastIndexOf('.'));
-      fileName = accentsconverter.transliterate(fileName.substring(0, fileName.lastIndexOf('.'))).concat(ext);
+      if (!textContainsArabic(fileName)) {
+        fileName = accentsconverter.transliterate(fileName.substring(0, fileName.lastIndexOf('.'))).concat(ext);
+      } else {
+        fileName = fileName.substring(0, fileName.lastIndexOf('.')).concat(ext);
+      }
     } else {
-      fileName = accentsconverter.transliterate(fileName);
+      if (!textContainsArabic(fileName)) {
+        fileName = accentsconverter.transliterate(fileName);
+      }
     }
     return Text.escapeIllegalJcrChars(fileName);
 
+  }
+
+  public static boolean textContainsArabic(String text) {
+    for (char charac : text.toCharArray()) {
+      if (Character.UnicodeBlock.of(charac) == Character.UnicodeBlock.ARABIC) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static List<String> getMemberships() throws Exception {
