@@ -274,10 +274,9 @@ public class UIAddressBar extends UIForm {
       }else {
         queryStatement = StringUtils.replace(SQL_QUERY,"$0",currentNode.getPath());
       }
-      text = text.replace("\"", "\\\"");
       String escapedText =Utils.escapeIllegalCharacterInQuery(text);
       queryStatement = StringUtils.replace(queryStatement,"$1", escapedText);
-      queryStatement = StringUtils.replace(queryStatement, "$2", escapedText.toLowerCase());
+      queryStatement = StringUtils.replace(queryStatement,"$2", escapedText.toLowerCase());
       queryStatement = StringUtils.replace(queryStatement,"$3", escapedText.toLowerCase());
       queryStatement = StringUtils.replace(queryStatement,"$4", escapedText.toLowerCase());
       uiExplorer.removeChildById("ViewSearch");

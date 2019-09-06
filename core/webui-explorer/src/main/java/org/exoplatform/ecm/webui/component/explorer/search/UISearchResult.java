@@ -202,6 +202,7 @@ public class UISearchResult extends UIContainer {
     }
 
     QueryCriteria queryCriteria = new QueryCriteria();
+    keyword = keyword.replace("\"","\\\"");
     queryCriteria.setKeyword(keyword);
     queryCriteria.setSearchPath(uiExplorer.getCurrentPath());
     queryCriteria.setSearchWebpage(false);
