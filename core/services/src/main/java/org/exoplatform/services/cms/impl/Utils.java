@@ -57,6 +57,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -640,10 +641,7 @@ public class Utils {
    * @return the string
    */
   public static String cleanString(String str) {
-    Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
-    if (!textContainsArabic(str)) {
-      str = accentsconverter.transliterate(str);
-    }
+    str = removeAccents(str);
     //the character ? seems to not be changed to d by the transliterate function
     StringBuffer cleanedStr = new StringBuffer(str.trim());
     // delete special character
@@ -704,30 +702,20 @@ public class Utils {
    * @return cleaned name
    */
   public static String cleanNameWithAccents(String fileName) {
-    Transliterator accentsconverter = Transliterator.getInstance("Latin; NFD; [:Nonspacing Mark:] Remove; NFC;");
     if (fileName.indexOf('.') > 0) {
       String ext = fileName.substring(fileName.lastIndexOf('.'));
-      if (!textContainsArabic(fileName)) {
-        fileName = accentsconverter.transliterate(fileName.substring(0, fileName.lastIndexOf('.'))).concat(ext);
-      } else {
-        fileName = fileName.substring(0, fileName.lastIndexOf('.')).concat(ext);
-      }
+      fileName = removeAccents(fileName.substring(0, fileName.lastIndexOf('.'))).concat(ext);
     } else {
-      if (!textContainsArabic(fileName)) {
-        fileName = accentsconverter.transliterate(fileName);
-      }
+      fileName = removeAccents(fileName);
     }
     return Text.escapeIllegalJcrChars(fileName);
 
   }
 
-  public static boolean textContainsArabic(String text) {
-    for (char charac : text.toCharArray()) {
-      if (Character.UnicodeBlock.of(charac) == Character.UnicodeBlock.ARABIC) {
-        return true;
-      }
-    }
-    return false;
+  public static String removeAccents(String text) {
+    return text == null ? null :
+            Normalizer.normalize(text, Normalizer.Form.NFD)
+                    .replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
   }
 
   public static List<String> getMemberships() throws Exception {
