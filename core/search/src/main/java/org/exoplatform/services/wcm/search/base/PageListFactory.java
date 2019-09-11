@@ -204,6 +204,11 @@ public class PageListFactory {
     QueryManager queryManager = session.getWorkspace().getQueryManager();
     Query query = queryManager.createQuery(queryStatement, language);
 
+    String keyword = criteria.getKeyword();
+    if (keyword != null) {
+      criteria.setKeyword(keyword.replace("\"", "\\\""));
+    }
+
     long offset = criteria != null ? criteria.getOffset() : 0;
     ((QueryImpl) query).setOffset(0);
     ((QueryImpl) query).setLimit(offset + AbstractPageList.RESULT_SIZE_SEPARATOR + 1);

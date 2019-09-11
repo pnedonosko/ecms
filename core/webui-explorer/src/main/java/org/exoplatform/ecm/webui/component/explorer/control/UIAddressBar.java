@@ -41,7 +41,6 @@ import org.exoplatform.ecm.webui.component.explorer.UIJCRExplorer.HistoryEntry;
 import org.exoplatform.ecm.webui.component.explorer.UIWorkingArea;
 import org.exoplatform.ecm.webui.component.explorer.search.UISearchResult;
 import org.exoplatform.ecm.webui.component.explorer.sidebar.UISideBar;
-import org.exoplatform.services.cms.impl.Utils;
 import org.exoplatform.services.cms.link.LinkUtils;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
@@ -274,7 +273,7 @@ public class UIAddressBar extends UIForm {
       }else {
         queryStatement = StringUtils.replace(SQL_QUERY,"$0",currentNode.getPath());
       }
-      String escapedText =Utils.escapeIllegalCharacterInQuery(text);
+      String escapedText = org.exoplatform.services.cms.impl.Utils.escapeIllegalCharacterInQuery(text);
       queryStatement = StringUtils.replace(queryStatement,"$1", escapedText);
       queryStatement = StringUtils.replace(queryStatement,"$2", escapedText.toLowerCase());
       queryStatement = StringUtils.replace(queryStatement,"$3", escapedText.toLowerCase());
