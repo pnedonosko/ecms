@@ -204,11 +204,6 @@ public class PageListFactory {
     QueryManager queryManager = session.getWorkspace().getQueryManager();
     Query query = queryManager.createQuery(queryStatement, language);
 
-    String keyword = criteria.getKeyword();
-    if (keyword != null) {
-      criteria.setKeyword(keyword.replace("\"", "\\\""));
-    }
-
     long offset = criteria != null ? criteria.getOffset() : 0;
     ((QueryImpl) query).setOffset(0);
     ((QueryImpl) query).setLimit(offset + AbstractPageList.RESULT_SIZE_SEPARATOR + 1);
@@ -262,6 +257,10 @@ public class PageListFactory {
             WCMCoreUtils.getUserSessionProvider();
     Session session = sessionProvider.getSession(workspace, WCMCoreUtils.getRepository());
 
+    String keyword = criteria.getKeyword();
+    if (keyword != null) {
+      criteria.setKeyword(keyword.replace("\"", "\\\""));
+    }
     FileApplicationSearchServiceConnector fileSearchInternalServiceConnector = CommonsUtils.getService(FileApplicationSearchServiceConnector.class);
     int offset = criteria != null ? (int) criteria.getOffset() : 0;
     Collection<SearchResult> results = fileSearchInternalServiceConnector.appSearch(workspace,
