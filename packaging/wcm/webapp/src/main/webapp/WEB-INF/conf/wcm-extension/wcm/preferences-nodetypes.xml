@@ -28,7 +28,7 @@
       <supertype>nt:base</supertype>
     </supertypes>
     <propertyDefinitions>
-      <propertyDefinition name="*" requiredType="Underfined" autoCreated="false" mandatory="false"
+      <propertyDefinition name="*" requiredType="undefined" autoCreated="false" mandatory="false"
         onParentVersion="COPY" protected="false" multiple="false">
         <valueConstraints />
       </propertyDefinition>
