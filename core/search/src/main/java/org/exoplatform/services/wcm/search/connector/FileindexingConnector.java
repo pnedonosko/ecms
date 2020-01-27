@@ -71,6 +71,7 @@ public class FileindexingConnector extends ElasticIndexingServiceConnector {
             .append("    \"lastUpdatedDate\" : {\"type\" : \"date\", \"format\": \"epoch_millis\"},\n")
             .append("    \"fileType\" : {\"type\" : \"keyword\"},\n")
             .append("    \"fileSize\" : {\"type\" : \"long\"},\n")
+            .append("    \"attachment\" : { \"properties\" : { \"content\" : {\"type\" : \"text\", \"store\": true, \"term_vector\": \"with_positions_offsets\"}}},\n")
             .append("    \"name\" : {\"type\" : \"text\", \"analyzer\": \"letter_lowercase_asciifolding\"},\n")
             .append("    \"title\" : {\"type\" : \"text\", \"analyzer\": \"letter_lowercase_asciifolding\"},\n")
             .append("    \"dc:title\" : {\"type\" : \"text\"},\n")
