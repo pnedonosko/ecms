@@ -18,6 +18,7 @@ package org.exoplatform.services.wcm.extensions.publication.lifecycle.authoring.
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -96,6 +97,11 @@ public class UIPublicationSchedule extends UIForm {
           publicationSchedule.getAncestorOfType(UIPublicationContainer.class).getChild(UIPublicationPanel.class);
       UIFormDateTimeInput startPublication = publicationSchedule.getChildById(START_PUBLICATION);
       UIFormDateTimeInput endPublication = publicationSchedule.getChildById(END_PUBLICATION);
+      if (startPublication.getValue().isEmpty()) {
+        Date now = Calendar.getInstance().getTime();
+        SimpleDateFormat format = new SimpleDateFormat(startPublication.getDatePattern_()+"Z");
+        startPublication.setValue(format.format(now));
+      }
       String startValue = startPublication.getValue();
       String endValue = endPublication.getValue();
       Calendar startDate = startPublication.getCalendar();
