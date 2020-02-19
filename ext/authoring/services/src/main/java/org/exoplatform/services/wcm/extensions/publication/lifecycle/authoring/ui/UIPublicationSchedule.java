@@ -18,7 +18,6 @@ package org.exoplatform.services.wcm.extensions.publication.lifecycle.authoring.
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -97,20 +96,27 @@ public class UIPublicationSchedule extends UIForm {
           publicationSchedule.getAncestorOfType(UIPublicationContainer.class).getChild(UIPublicationPanel.class);
       UIFormDateTimeInput startPublication = publicationSchedule.getChildById(START_PUBLICATION);
       UIFormDateTimeInput endPublication = publicationSchedule.getChildById(END_PUBLICATION);
-      if (startPublication.getValue().isEmpty()) {
-        Date now = Calendar.getInstance().getTime();
-        SimpleDateFormat format = new SimpleDateFormat(startPublication.getDatePattern_()+"Z");
-        startPublication.setValue(format.format(now));
-      }
       String startValue = startPublication.getValue();
       String endValue = endPublication.getValue();
       Calendar startDate = startPublication.getCalendar();
       Calendar endDate = endPublication.getCalendar();
       SimpleDateFormat format = new SimpleDateFormat(startPublication.getDatePattern_()+"Z");
-      startDate.setTime(format.parse(startValue));
-      endDate.setTime(format.parse(endValue));
+      if (!startValue.isEmpty()) {
+        startDate.setTime(format.parse(startValue));
+      }
+      if (!endValue.isEmpty()) {
+        endDate.setTime(format.parse(endValue));
+      }
       Node node = publicationPanel.getCurrentNode();
       try {
+                if ((startDate == null )
+                || (endDate == null )) {
+          uiApp.addMessage(new ApplicationMessage("UIPublicationPanel.msg.invalid-format",
+                  null,
+                  ApplicationMessage.WARNING));
+          event.getRequestContext().addUIComponentToUpdateByAjax(publicationSchedule);
+          return;
+        }
         if ((startDate == null && StringUtils.isNotEmpty(startValue))
           || (endDate == null && StringUtils.isNotEmpty(endValue))) {
           uiApp.addMessage(new ApplicationMessage("UIPublicationPanel.msg.invalid-format",
