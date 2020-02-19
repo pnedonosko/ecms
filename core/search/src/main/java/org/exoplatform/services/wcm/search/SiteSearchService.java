@@ -58,7 +58,6 @@ public interface SiteSearchService {
   public final static String PAGE_MODE_NONE = "none";
   public final static String PAGE_MODE_MORE = "more";
   public final static String PAGE_MODE_PAGINATION = "pagination";
-  public final static String PATH_PORTAL_SITES = "/production/mop:workspace/mop:portalsites";
   
   /**
    * Adds the exclude/include data type plugin.
@@ -95,14 +94,15 @@ public interface SiteSearchService {
                                                     boolean isSearchContent) throws Exception;
 
   /**
+   * This method is no longer supported. Please use the Elasticsearch implementation instead.
    * Searches for pages.
-   * 
    * @param sessionProvider The session provider.
    * @param queryCriteria The query criteria.
    * @param pageSize The page size.
    * @return The list of pages.
    * @throws Exception The exception
    */
+  @Deprecated
   public AbstractPageList<ResultNode> searchPageContents(SessionProvider sessionProvider,
                                                       QueryCriteria queryCriteria,
                                                       Locale locale,
