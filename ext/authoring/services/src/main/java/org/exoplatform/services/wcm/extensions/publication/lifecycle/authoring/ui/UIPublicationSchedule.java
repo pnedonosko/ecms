@@ -93,30 +93,25 @@ public class UIPublicationSchedule extends UIForm {
       UIPublicationSchedule publicationSchedule = event.getSource();
       UIApplication uiApp = publicationSchedule.getAncestorOfType(UIApplication.class);
       UIPublicationPanel publicationPanel =
-          publicationSchedule.getAncestorOfType(UIPublicationContainer.class).getChild(UIPublicationPanel.class);
+              publicationSchedule.getAncestorOfType(UIPublicationContainer.class).getChild(UIPublicationPanel.class);
       UIFormDateTimeInput startPublication = publicationSchedule.getChildById(START_PUBLICATION);
       UIFormDateTimeInput endPublication = publicationSchedule.getChildById(END_PUBLICATION);
       String startValue = startPublication.getValue();
       String endValue = endPublication.getValue();
+      if (startValue.isEmpty() || endValue.isEmpty()) {
+        uiApp.addMessage(new ApplicationMessage("UIPublicationPanel.msg.invalid-format",
+                null,
+                ApplicationMessage.WARNING));
+        event.getRequestContext().addUIComponentToUpdateByAjax(publicationSchedule);
+        return;
+      }
       Calendar startDate = startPublication.getCalendar();
       Calendar endDate = endPublication.getCalendar();
-      SimpleDateFormat format = new SimpleDateFormat(startPublication.getDatePattern_()+"Z");
-      if (!startValue.isEmpty()) {
-        startDate.setTime(format.parse(startValue));
-      }
-      if (!endValue.isEmpty()) {
-        endDate.setTime(format.parse(endValue));
-      }
+      SimpleDateFormat format = new SimpleDateFormat(startPublication.getDatePattern_() + "Z");
+      startDate.setTime(format.parse(startValue));
+      endDate.setTime(format.parse(endValue));
       Node node = publicationPanel.getCurrentNode();
       try {
-                if ((startDate == null )
-                || (endDate == null )) {
-          uiApp.addMessage(new ApplicationMessage("UIPublicationPanel.msg.invalid-format",
-                  null,
-                  ApplicationMessage.WARNING));
-          event.getRequestContext().addUIComponentToUpdateByAjax(publicationSchedule);
-          return;
-        }
         if ((startDate == null && StringUtils.isNotEmpty(startValue))
           || (endDate == null && StringUtils.isNotEmpty(endValue))) {
           uiApp.addMessage(new ApplicationMessage("UIPublicationPanel.msg.invalid-format",
