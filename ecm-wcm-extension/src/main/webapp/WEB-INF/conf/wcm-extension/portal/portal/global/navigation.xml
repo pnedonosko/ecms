@@ -25,30 +25,30 @@
   <page-nodes>
     <node>
       <name>documents</name>
-      <label>#{portal.system.documents}</label>
+      <label>#{portal.global.documents}</label>
       <visibility>SYSTEM</visibility>
-      <page-reference>portal::system::documents</page-reference>
+      <page-reference>portal::global::documents</page-reference>
     </node>
 
     <node>
       <name>searchResult</name>
-      <label>#{portal.system.searchResult}</label>
+      <label>#{portal.global.searchResult}</label>
       <visibility>SYSTEM</visibility>
-      <page-reference>portal::system::searchResult</page-reference>
+      <page-reference>portal::global::searchResult</page-reference>
     </node>
 
     <node>
       <name>detail</name>
-      <label>#{portal.system.detail}</label>
+      <label>#{portal.global.detail}</label>
       <visibility>SYSTEM</visibility>
-      <page-reference>portal::system::detail</page-reference>
+      <page-reference>portal::global::detail</page-reference>
     </node>
 
     <node>
       <name>printviewer</name>
-      <label>#{portal.system.printviewer}</label>
+      <label>#{portal.global.printviewer}</label>
       <visibility>SYSTEM</visibility>
-      <page-reference>portal::system::printviewer</page-reference>
+      <page-reference>portal::global::printviewer</page-reference>
     </node>
   </page-nodes>
 </node-navigation>
