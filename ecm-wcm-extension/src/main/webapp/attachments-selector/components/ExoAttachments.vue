@@ -324,7 +324,9 @@ export default {
               this.removeAttachedFile(file.uploadId);
             } else {
               file.uploadProgress = this.maxProgress;
-              this.$emit('uploadingFileFinished');
+              if(this.value.some(f => f.name === file.name)) {
+                this.$emit('uploadingFileFinished');
+              }
             }
           });
 
@@ -344,8 +346,8 @@ export default {
       } else {
         this.value = this.value.filter(attachedFile => attachedFile.id !== file.id);
       }
-      this.$emit('removingFileFinished');
       this.$emit('input', this.value);
+      this.$emit('removingFileFinished');
     },
     addDestinationFolder(pathDestinationFolder, folderName) {
       this.pathDestinationFolder = pathDestinationFolder;
@@ -373,6 +375,7 @@ export default {
       if (selectedFiles) {
         this.value = selectedFiles;
         this.$emit('input', this.value);
+        this.$emit('attachExistingServerAttachment');
       }
       this.showDocumentSelector = !this.showDocumentSelector;
       this.drawerTitle = this.showDocumentSelector? `${this.$t('attachments.drawer.existingUploads')}` : `${this.$t('attachments.drawer.header')}`;
