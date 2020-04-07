@@ -1,6 +1,6 @@
 <template>
   <div id="exoAttachmentsApp">
-    <div :class="{ open: showAttachments || showAttachmentsDrawer }" class="attachments drawer ignore-vuetify-classes" @keydown.esc="closeAttachments()">
+    <div :class="{ open: showAttachmentsDrawer }" class="attachments drawer ignore-vuetify-classes" @keydown.esc="closeAttachments()">
       <div :class="showDocumentSelector? 'documentSelector' : ''" class="attachmentsHeader header">
         <a v-if="showDocumentSelector" class="backButton" @click="toggleServerFileSelector()">
           <i class="uiIconBack"> </i>
@@ -104,7 +104,7 @@
         <a class="btn btn-primary ignore-vuetify-classes" @click="closeAttachments()">{{ $t('attachments.drawer.apply') }}</a>
       </div>
     </div>
-    <div v-show="showAttachments || showAttachmentsDrawer" class="drawer-backdrop" @click="closeAttachments()"></div>
+    <div v-show="showAttachmentsDrawer && showAttachmentsBackdrop" class="drawer-backdrop" @click="closeAttachments()"></div>
   </div>
 </template>
 
@@ -135,11 +135,14 @@ export default {
     showAttachmentsDrawer: {
       type: Boolean,
       default: false
+    },
+    showAttachmentsBackdrop: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
     return {
-      showAttachments: false,
       showDestinationFolder:false,
       message: '',
       uploadingFilesQueue: [],
@@ -214,10 +217,8 @@ export default {
   },
   methods: {
     closeAttachments: function() {
-      this.$emit('HideAttachmentsDrawer', this.showAttachments);
-      this.showAttachments = false;
-      document.getElementsByClassName('attachments drawer')[0].className = 'attachments drawer';
-      document.getElementById('exoAttachmentsApp').getElementsByClassName('drawer-backdrop')[0].style.display = 'none';
+      this.showAttachmentsDrawer = false;
+      this.$emit('HideAttachmentsDrawer', this.showAttachmentsDrawer);
     },
     uploadFile: function() {
       this.$refs.uploadInput.click();
