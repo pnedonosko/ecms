@@ -37,6 +37,9 @@ bin/
 .classpath
 .project
 
+# vsCode settings
+.vscode
+
 # Bin
 bin/
 # Log 
