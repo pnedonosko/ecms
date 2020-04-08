@@ -12,8 +12,8 @@ const ActivityComposerAttachmentsPlugin = [
       props: {
         showAttachmentsDrawer: false,
         showAttachmentsBackdrop: false,
-        maxFilesCount: 22,
-        maxFileSize: 333
+        maxFilesCount: 20,
+        maxFileSize: 25
       },
       model: {
         value: []
@@ -41,11 +41,9 @@ const ActivityComposerAttachmentsPlugin = [
       attachmentsComponent.showAttachmentsDrawer = true;
     }
   }];
-require(['SHARED/extensionRegistry'], function (extensionRegistry) {
 
-  require(['SHARED/extensionRegistry'], function (extensionRegistry) {
-    for (const extension of ActivityComposerAttachmentsPlugin) {
-      extensionRegistry.registerExtension('ActivityComposer', 'activity-composer-action', extension);
-    }
-  });
+require(['SHARED/extensionRegistry'], function (extensionRegistry) {
+  for (const extension of ActivityComposerAttachmentsPlugin) {
+    extensionRegistry.registerExtension('ActivityComposer', 'activity-composer-action', extension);
+  }
 });
