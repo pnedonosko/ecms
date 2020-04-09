@@ -178,14 +178,18 @@ export default {
         setTimeout(() => this.sameFileError = false, this.MESSAGES_DISPLAY_TIME);
       }
     },
-    value(){
-      if(this.value.length === 0){
-        this.pathDestinationFolder = '';
-        this.showFile = false;
-        this.schemaFolder = [];
-        this.addDefaultPath();
+    value: {
+      deep:true,
+      handler() {
+        this.$emit('attachmentsChanged', this.value);
+        if (this.value.length === 0) {
+          this.pathDestinationFolder = '';
+          this.showFile = false;
+          this.schemaFolder = [];
+          this.addDefaultPath();
+        }
       }
-    },
+    }
   },
   mounted() {
     ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach( function( evt ) {
@@ -376,6 +380,7 @@ export default {
       if (selectedFiles) {
         this.value = selectedFiles;
         this.$emit('input', this.value);
+        this.$emit('attachmentsChanged', this.value);
         this.$emit('attachExistingServerAttachment');
       }
       this.showDocumentSelector = !this.showDocumentSelector;

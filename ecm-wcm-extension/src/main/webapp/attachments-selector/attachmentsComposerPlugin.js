@@ -33,6 +33,10 @@ const ActivityComposerAttachmentsPlugin = [
           'event': 'attachExistingServerAttachment',
           'listener': 'setUploadingCount',
           'listenerParam': 'addExisting'
+        },
+        {
+          'event': 'attachmentsChanged',
+          'listener': 'updateAttachments'
         }
       ],
       show: false
