@@ -74,7 +74,7 @@
         :class="`${action.appClass}Action`"
         class="actionBox"
       >
-        <v-icon :class="action.iconClass" @click="executeAction(action)">cloud</v-icon>
+        <v-icon :class="action.iconClass" @click="executeAction(action)">{{ action.iconName }}</v-icon>
         <component :is="action.component.name"></component>
       </div>
     </div>
