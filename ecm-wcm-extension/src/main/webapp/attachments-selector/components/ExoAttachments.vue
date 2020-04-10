@@ -222,6 +222,7 @@ export default {
   methods: {
     closeAttachments: function() {
       this.showAttachmentsDrawer = false;
+      document.getElementsByClassName('attachments drawer')[0].className = ' attachments drawer';
       this.$emit('HideAttachmentsDrawer', this.showAttachmentsDrawer);
     },
     uploadFile: function() {

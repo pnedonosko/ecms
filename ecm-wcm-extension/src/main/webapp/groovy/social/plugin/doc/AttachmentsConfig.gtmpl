@@ -1,0 +1,17 @@
+<%
+  import org.exoplatform.commons.utils.CommonsUtils;
+  import org.exoplatform.commons.utils.PropertyManager;
+  import org.apache.commons.lang.StringUtils;
+
+  PropertyManager propertyManager = CommonsUtils.getService(PropertyManager.class);
+
+  def maxToUpload = propertyManager.getProperty("exo.social.composer.maxToUpload");
+  if(StringUtils.isBlank(maxToUpload)) {
+  maxToUpload = "20";
+  }
+
+  def maxFileSize = propertyManager.getProperty("exo.social.composer.maxFileSizeInMB");
+  if(StringUtils.isBlank(maxFileSize)) {
+  maxFileSize = "200";
+  }
+%>
