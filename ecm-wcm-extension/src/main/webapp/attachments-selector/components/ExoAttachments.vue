@@ -122,16 +122,6 @@ export default {
       type: String,
       default: ''
     },
-    maxFilesCount: {
-      type: Number,
-      required: false,
-      default: 20
-    },
-    maxFileSize: {
-      type: Number,
-      required: false,
-      default: 25
-    },
     showAttachmentsBackdrop: {
       type: Boolean,
       default: true

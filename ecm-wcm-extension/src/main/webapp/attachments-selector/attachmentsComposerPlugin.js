@@ -11,8 +11,6 @@ const ActivityComposerAttachmentsPlugin = [
       name: 'exo-attachments',
       props: {
         showAttachmentsBackdrop: false,
-        maxFilesCount: 20,
-        maxFileSize: 25
       },
       model: {
         value: []
