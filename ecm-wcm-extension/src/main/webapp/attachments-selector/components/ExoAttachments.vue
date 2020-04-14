@@ -1,15 +1,15 @@
 <template>
   <div id="exoAttachmentsApp">
-    <div :class="{ open: showAttachmentsDrawer }" class="attachments drawer ignore-vuetify-classes" @keydown.esc="closeAttachments()">
+    <div :class="{ open: showAttachmentsDrawer }" class="attachments drawer ignore-vuetify-classes" @keydown.esc="toggleAttachmentsDrawer()">
       <div :class="showDocumentSelector? 'documentSelector' : ''" class="attachmentsHeader header">
         <a v-if="showDocumentSelector" class="backButton" @click="toggleServerFileSelector()">
           <i class="uiIconBack"> </i>
         </a>
-        <a v-if="!showDocumentSelector" class="backButton" @click="closeAttachments()">
+        <a v-if="!showDocumentSelector" class="backButton" @click="toggleAttachmentsDrawer()">
           <i class="uiIconBack"> </i>
         </a>
         <span class="attachmentsTitle">{{ drawerTitle }}</span>
-        <a class="attachmentsCloseIcon" @click="closeAttachments()">×</a>
+        <a class="attachmentsCloseIcon" @click="toggleAttachmentsDrawer()">×</a>
       </div>
       <div :class="showDocumentSelector? 'serverFiles' : 'attachments'" class="content">
         <div v-show="!showDocumentSelector" class="attachmentsContent">
@@ -101,10 +101,10 @@
         <exo-server-files-selector v-if="showDocumentSelector && showDestinationFolder" :mode-folder-selection="showDestinationFolder" @selectedItems="addDestinationFolder" @cancel="toggleServerFileSelector()"></exo-server-files-selector>
       </div>
       <div v-if="!showDocumentSelector" class="attachmentsFooter footer ignore-vuetify-classes">
-        <a class="btn btn-primary ignore-vuetify-classes" @click="closeAttachments()">{{ $t('attachments.drawer.apply') }}</a>
+        <a class="btn btn-primary ignore-vuetify-classes" @click="toggleAttachmentsDrawer()">{{ $t('attachments.drawer.apply') }}</a>
       </div>
     </div>
-    <div v-show="showAttachmentsDrawer && showAttachmentsBackdrop" class="drawer-backdrop" @click="closeAttachments()"></div>
+    <div v-show="showAttachmentsDrawer && showAttachmentsBackdrop" class="drawer-backdrop" @click="toggleAttachmentsDrawer()"></div>
   </div>
 </template>
 
@@ -132,10 +132,6 @@ export default {
       required: false,
       default: 25
     },
-    showAttachmentsDrawer: {
-      type: Boolean,
-      default: false
-    },
     showAttachmentsBackdrop: {
       type: Boolean,
       default: true
@@ -159,7 +155,8 @@ export default {
       drawerTitle: `${this.$t('attachments.drawer.header')}`,
       pathDestinationFolder : '',
       showFile: false,
-      schemaFolder: []
+      schemaFolder: [],
+      showAttachmentsDrawer: false
     };
   },
   watch: {
@@ -220,10 +217,8 @@ export default {
     this.addDefaultPath();
   },
   methods: {
-    closeAttachments: function() {
-      this.showAttachmentsDrawer = false;
-      document.getElementsByClassName('attachments drawer')[0].className = ' attachments drawer';
-      this.$emit('HideAttachmentsDrawer', this.showAttachmentsDrawer);
+    toggleAttachmentsDrawer: function() {
+      this.showAttachmentsDrawer = !this.showAttachmentsDrawer;
     },
     uploadFile: function() {
       this.$refs.uploadInput.click();

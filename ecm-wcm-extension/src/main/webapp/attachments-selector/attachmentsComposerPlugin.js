@@ -10,7 +10,6 @@ const ActivityComposerAttachmentsPlugin = [
     component: {
       name: 'exo-attachments',
       props: {
-        showAttachmentsDrawer: false,
         showAttachmentsBackdrop: false,
         maxFilesCount: 20,
         maxFileSize: 25
@@ -38,11 +37,10 @@ const ActivityComposerAttachmentsPlugin = [
           'event': 'attachmentsChanged',
           'listener': 'updateAttachments'
         }
-      ],
-      show: false
+      ]
     },
     onExecute: function (attachmentsComponent) {
-      attachmentsComponent.showAttachmentsDrawer = true;
+      attachmentsComponent.toggleAttachmentsDrawer();
     }
   }];
 
