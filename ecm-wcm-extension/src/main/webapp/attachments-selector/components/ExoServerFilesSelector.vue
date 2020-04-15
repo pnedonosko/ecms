@@ -128,13 +128,19 @@
       </div>
     </div>
 
-    <div class="attachActions">
+
+    <div v-if="modeFolderSelection" class="buttonActions btnActions">
+      <button class="btn btnCancel" type="button" @click="$emit('cancel')">{{ $t('attachments.drawer.cancel') }}</button>
+      <button class="btn btn-primary attach ignore-vuetify-classes btnSelect" type="button" @click="selectDestination()">{{ $t('attachments.drawer.select') }}</button>
+    </div>
+
+    <div v-if="!modeFolderSelection" class="attachActions">
       <div class="limitMessage">
         <span :class="filesCountClass" class="countLimit">
           {{ $t('attachments.drawer.maxFileCountLeft').replace('{0}', filesCountLeft) }}
         </span>
       </div>
-      <div class="buttonActions">
+      <div v-if="!modeFolderSelection" class="buttonActions">
         <button class="btn" type="button" @click="$emit('cancel')">{{ $t('attachments.drawer.cancel') }}</button>
         <button
           :disabled="selectedFiles.length === 0"
@@ -155,6 +161,10 @@ import { getAttachmentsComposerExtensions, executeExtensionAction } from '../ext
 
 export default {
   props: {
+    modeFolderSelection: {
+      type: Boolean,
+      default:false,
+    },
     spaceId: {
       type: String,
       default: '',
@@ -184,7 +194,9 @@ export default {
       searchFilesFolders: '',
       loadingFolders: true,
       filesCountClass: '',
-      attachmentsComposerActions: []
+      attachmentsComposerActions: [],
+      selectedFolderPath : '',
+      schemaFolder: ''
     };
   },
   computed: {
@@ -258,6 +270,18 @@ export default {
       this.resetExplorer();
       folder.isSelected = true;
       this.fetchChildrenContents(folder.path);
+      if (folder.path === 'Public') {
+        const driverPath = this.driveRootPath.split('/');
+        let localDrive = driverPath[0];
+        const number = 2;
+        for (let i = 1; i < driverPath.length - number; i++) {
+          localDrive = localDrive.concat('/', driverPath[i]);
+        }
+        this.selectedFolderPath = localDrive.concat('/', folder.path);
+      } else {
+        this.selectedFolderPath = this.driveRootPath.concat(folder.path);
+      }
+      this.schemaFolder = this.currentDrive.name.concat('/', folder.path);
     },
     openDrive(drive) {
       this.foldersHistory = [];
@@ -334,7 +358,8 @@ export default {
     generateHistoryTree(folder) {
       if (!this.foldersHistory.find((f) => f.name === folder.name) && folder) {
         this.foldersHistory.push({
-          name: folder.driverType === 'Group Drives' ? folder.title : folder.name,
+          name: folder.name,
+          title: folder.title,
           path: folder.driverType ? '' : folder.path,
           driverType: folder.driverType ? folder.driverType : '',
         });
@@ -347,7 +372,7 @@ export default {
       this.foldersHistory.find((f) => f.name === folder.name).isSelected = true;
     },
     addSelectedFiles() {
-      this.$emit('attachExistingServerAttachment', this.selectedFiles);
+      this.$emit('selectedItems', this.selectedFiles);
     },
     showSearchDocumentInput() {
       this.showSearchInput = !this.showSearchInput;
@@ -371,7 +396,7 @@ export default {
               id: id,
               name: fetchedFolders[j].getAttribute('name'),
               title: fetchedFolders[j].getAttribute('title'),
-              path: fetchedFolders[j].getAttribute('titlePath'),
+              path: fetchedFolders[j].getAttribute('currentFolder'),
               folderTypeCSSClass: folderTypeCSSClass,
               isSelected: false,
             });
@@ -439,6 +464,13 @@ export default {
     executeAction(action) {
       executeExtensionAction(action, this.$refs[action.key][0]);
     },
-  },
+    selectDestination() {
+      if(this.selectedFolderPath === ''){
+        this.selectedFolderPath = this.driveRootPath;
+        this.schemaFolder = this.currentDrive.name ;
+      }
+      this.$emit('selectedItems',this.selectedFolderPath,this.schemaFolder);
+    }
+  }
 };
 </script>
