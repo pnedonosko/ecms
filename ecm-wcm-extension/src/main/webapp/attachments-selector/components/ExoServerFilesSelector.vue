@@ -4,9 +4,8 @@
       <div v-if="!showSearchInput" class="currentDirectory">
         <div class="documents" @click="fetchUserDrives()">
           <i class="uiIconFolder"></i>
-          <p class="documents" data-toggle="tooltip" rel="tooltip" data-placement="bottom" data-original-title="Documents">
-            {{ $t('attachments.drawer.documents') }}
-          </p>
+          <p class="documents" data-toggle="tooltip" rel="tooltip" data-placement="bottom" 
+            data-original-title="Documents">{{ $t('attachments.drawer.documents') }}</p>
         </div>
         <div v-if="currentDrive.title" class="currentDrive" @click="openDrive(currentDrive)">
           <span class="uiIconArrowRight"></span>
