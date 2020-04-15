@@ -60,13 +60,12 @@
       </div>
       <div
         v-for="action in attachmentsComposerActions"
-        :ref="action.key"
         :key="action.key"
         :class="`${action.appClass}Action`"
         class="actionBox"
       >
         <v-icon :class="action.iconClass" @click="executeAction(action)">{{ action.iconName }}</v-icon>
-        <component :is="action.component.name"></component>
+        <component v-if="action.component" :is="action.component.name" :ref="action.key"></component>
       </div>
     </div>
 
@@ -288,7 +287,7 @@ export default {
       this.loadingFolders = true;
       const self = this;
       attachmentsService
-        .fetchFoldersAndFiles(this.currentDrive.name, this.workspace, parentPath.replace('@', ''))
+        .fetchFoldersAndFiles(this.currentDrive.name, this.workspace, parentPath)
         .then((xml) => {
           const rootFolder = xml.childNodes[0];
           if (rootFolder.getAttribute('path') === '/') {
@@ -385,7 +384,7 @@ export default {
               .pop();
             this.folders.push({
               id: id,
-              name: fetchedFolders[j].getAttribute('title').includes('@') ? fetchedFolders[j].getAttribute('title') : fetchedFolders[j].getAttribute('name'),
+              name: fetchedFolders[j].getAttribute('name'),
               title: fetchedFolders[j].getAttribute('title'),
               path: fetchedFolders[j].getAttribute('currentFolder'),
               folderTypeCSSClass: folderTypeCSSClass,
@@ -460,7 +459,7 @@ export default {
       this.$emit('selectedItems',this.selectedFolderPath,this.schemaFolder);
     },
     executeAction(action) {
-      executeExtensionAction(action, this.$refs[action.key]);
+      executeExtensionAction(action, this.$refs[action.key][0]);
     },
   },
 };
