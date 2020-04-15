@@ -122,6 +122,16 @@ export default {
       type: String,
       default: ''
     },
+    maxFilesCount: {
+      type: Number,
+      required: false,
+      default: parseInt(`${eXo.env.portal.maxToUpload}`)
+    },
+    maxFileSize: {
+      type: Number,
+      required: false,
+      default: parseInt(`${eXo.env.portal.maxFileSize}`)
+    },
     showAttachmentsBackdrop: {
       type: Boolean,
       default: true
