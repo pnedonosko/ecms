@@ -394,11 +394,7 @@ export default {
       this.$emit('selectedItems', this.selectedFolderPath, this.schemaFolder);
     },
     executeAction(action) {
-      this.$refs[action.key].map(ref => {
-        if (ref.refId && ref.refId === action.key) {
-          executeExtensionAction(action, ref);
-        }
-      });
+      executeExtensionAction(action);
     },
   },
 };
