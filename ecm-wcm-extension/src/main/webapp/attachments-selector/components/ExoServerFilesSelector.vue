@@ -40,7 +40,7 @@
       </div>
       <div v-for="action in attachmentsComposerActions" :key="action.key" :class="`${action.appClass}Action`" class="actionBox">
         <v-icon :class="action.iconClass" class="uiActionIcon" @click="executeAction(action)">{{ action.iconName }}</v-icon>
-        <component v-if="action.component" :is="action.component.name" :ref="action.key"></component>
+        <component v-dynamic-events="action.component.events" v-if="action.component" :is="action.component.name" :ref="action.key"></component>
       </div>
     </div>
 
@@ -103,6 +103,45 @@ import * as attachmentsService from '../attachmentsService.js';
 import { getAttachmentsComposerExtensions, executeExtensionAction } from '../extension';
 
 export default {
+  directives: {
+    DynamicEvents: {
+      bind: function (el, binding, vnode) {
+        const allEvents = binding.value;
+        if (allEvents) {
+          allEvents.forEach((event) => {
+            vnode.componentInstance.$emit('cloudDriveConnected', 'cloudDrive');
+            // register handler in the dynamic component
+            if (vnode.componentInstance) {
+              vnode.componentInstance.$on(event.event, (eventData) => {
+                console.log(eventData);
+                const param = eventData ? eventData : event.listenerParam;
+                // when the event is fired, the eventListener function is going to be called
+                vnode.context[event.listener](param);
+              });
+            }
+          });
+        }
+      },
+      inserted(el, binding, vndoe) {
+        console.log('inserted');
+        console.log(vndoe);
+      },
+      updated(el, binding, vnode) {
+        console.log('updated');
+        console.log(vnode);
+      },
+      componentUpdated(el, binding, vnode, oldVnode) {
+        console.log('componentUpdated');
+        console.log(oldVnode);
+      },
+      unbind: function (el, binding, vnode) {
+        console.log('unbind');
+        if (vnode.componentInstance) {
+          vnode.componentInstance.$off();
+        }
+      },
+    }
+  },
   props: {
     modeFolderSelection: {
       type: Boolean,
@@ -175,7 +214,7 @@ export default {
     },
     emptyFolderForSelectDestination() {
       return this.folders.length === 0 && this.drivers.length === 0 && !this.loadingFolders;
-    },
+    }
   },
   watch: {
     filesCountLeft() {
@@ -208,6 +247,8 @@ export default {
   },
   methods: {
     openFolder: function(folder) {
+      console.log('open folder');
+      console.log(folder);
       this.generateHistoryTree(folder);
       this.resetExplorer();
       folder.isSelected = true;
@@ -395,7 +436,7 @@ export default {
     },
     executeAction(action) {
       executeExtensionAction(action);
-    },
+    }
   },
 };
 </script>
